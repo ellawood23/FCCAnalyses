@@ -2396,9 +2396,20 @@ ROOT::VecOps::RVec<HemisParticleInfo> get_RP_HemisInfo(ROOT::VecOps::RVec<edm4he
   int p_vtxind = get_Vertex_fromRPindex(pion.index, vertex);
 
   // -999 indicates that the corresponding vertex is not found
-  if (l_vtxind != -999) lept.fromPV = vertex.at(l_vtxind).vertex.primary;
-  if (k_vtxind != -999) kaon.fromPV = vertex.at(k_vtxind).vertex.primary;
-  if (p_vtxind != -999) pion.fromPV = vertex.at(p_vtxind).vertex.primary;
+  #if EDM4HEP_BUILD_VERSION <= EDM4HEP_VERSION(0, 10, 5)
+    if (l_vtxind != -999) lept.fromPV = vertex.at(l_vtxind).vertex.primary;
+    if (k_vtxind != -999) kaon.fromPV = vertex.at(k_vtxind).vertex.primary;
+    if (p_vtxind != -999) pion.fromPV = vertex.at(p_vtxind).vertex.primary;
+
+  #else
+    if (l_vtxind != -999) lept.fromPV = edm4hep::utils::checkBit(vertex.at(l_vtxind).vertex.type,
+                                    edm4hep::Vertex::BITPrimaryVertex);
+    if (k_vtxind != -999) kaon.fromPV = edm4hep::utils::checkBit(vertex.at(k_vtxind).vertex.type,
+                                    edm4hep::Vertex::BITPrimaryVertex);
+    if (p_vtxind != -999) pion.fromPV = edm4hep::utils::checkBit(vertex.at(p_vtxind).vertex.type,
+                                    edm4hep::Vertex::BITPrimaryVertex);
+  #endif
+  
   
   ROOT::VecOps::RVec<HemisParticleInfo> result {lept, kaon, pion};
   return result;
