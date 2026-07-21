@@ -77,6 +77,14 @@ namespace myUtils{
     ROOT::VecOps::RVec<int> operator() (ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop);
   };
 
+  // For B2Inv
+  struct HemisParticleInfo {
+    int num = 0;
+    float maxE = 0.;
+    int index = -999;
+    int fromPV = -999; // Default value to check for errors
+  };
+
 
   ROOT::VecOps::RVec<edm4hep::TrackState> get_pseudotrack(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex,
 							  ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop);
@@ -112,6 +120,14 @@ namespace myUtils{
 									 ROOT::VecOps::RVec<edm4hep::TrackState> tracks,
 									 ROOT::VecOps::RVec<int> recin,
 									 ROOT::VecOps::RVec<int> mcin);
+
+  //ensure takes correct BSC
+   ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> get_VertexObject(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertexMC> mcver,
+									 ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> reco,
+									 ROOT::VecOps::RVec<edm4hep::TrackState> tracks,
+									 ROOT::VecOps::RVec<int> recin,
+									 ROOT::VecOps::RVec<int> mcin,
+                  double bsc_sigmax, double bsc_sigmay, double bsc_sigmaz);
 
   ROOT::VecOps::RVec<float> get_Vertex_mass(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex,
 					    ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> reco);
@@ -150,7 +166,7 @@ namespace myUtils{
 					    ROOT::VecOps::RVec<int> mcind,
 					    int comp);
 
-  std::vector<std::vector<int>> get_Vertex_ind(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex);
+  ROOT::VecOps::RVec<ROOT::VecOps::RVec<int>> get_Vertex_ind(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex);
 
   float get_d0(TVector3 x, TVector3 p);
   float get_z0(TVector3 x, TVector3 p);
@@ -406,6 +422,104 @@ namespace myUtils{
 								ROOT::VecOps::RVec<float> thrust);
 
   int has_anglethrust_emin(ROOT::VecOps::RVec<float> angle);
+
+  //////////////////////////////////////////////////
+  //// B2Inv and BflavTag functions ////
+  /////////////////////////////////////////////////
+
+  // Get the MC variables of truthmatched reconstructed particles
+  ROOT::VecOps::RVec<edm4hep::MCParticleData> get_MCObject_fromRP (ROOT::VecOps::RVec<int> reco_ind,
+      ROOT::VecOps::RVec<int> mc_ind,
+      ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> reco,
+      ROOT::VecOps::RVec<edm4hep::MCParticleData> mc);
+
+  // Get the parent and grandparent ids of truthmatched reconstructed particles
+  ROOT::VecOps::RVec<ROOT::VecOps::RVec<int>> get_MCParentandGParent_fromRP (ROOT::VecOps::RVec<int> reco_ind,
+      ROOT::VecOps::RVec<int> mc_ind,
+      ROOT::VecOps::RVec<int> parents,
+      ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop,
+      ROOT::VecOps::RVec<edm4hep::MCParticleData> mc);
+
+  // Get the index of the MC vertex corresponding to the MCParticle
+  ROOT::VecOps::RVec<int> get_MCVertex_fromMC(ROOT::VecOps::RVec<edm4hep::MCParticleData> mc, ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertexMC> mcvertex);
+
+  // Get the index of the reconstructed vertex to which the RecoP belongs
+  ROOT::VecOps::RVec<int> get_Vertex_fromRP(ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop,
+      ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex);
+
+  // Get the index of the reconstructed vertex, but now using a single reco_ind
+  int get_Vertex_fromRPindex(int index, ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex);
+
+  // Use Rec_AxisCosTheta to get information about which hemisphere the particle is travelling in
+  // 1 if true, 0 if false, -1 if indeterminate (costheta exactly 0 somehow)
+  struct get_RP_inHemis {
+  public:
+    get_RP_inHemis(bool arg_pos=0);
+    ROOT::VecOps::RVec<int> operator() (const ROOT::VecOps::RVec<float> angle);
+
+  private:
+    bool _pos; /// Which hemisphere to select, false selects cosTheta<0 true selects cosTheta>0, Default=0
+  };
+  
+  /* output[0] -> info about leptons
+   * output[1] -> info about kaons
+   * output[2] -> info about pions
+   */
+  ROOT::VecOps::RVec<HemisParticleInfo> get_RP_HemisInfo(ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop,
+                ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex, ROOT::VecOps::RVec<int> should_eval);
+
+  // Meant to take the output of get_Vertex_d2PV and sign based on the hemisphere
+  ROOT::VecOps::RVec<float> get_VertexFeature_signed(ROOT::VecOps::RVec<int> sign, ROOT::VecOps::RVec<float> feature_vtx);
+
+
+  /**********************************
+  Additional Ella functions
+ ***********************************/
+  // Define PV variable from filtered vertex variables in which Rec_vtx_isPV is True
+  ROOT::VecOps::RVec<float> filter_vtx_variable_onisPV(ROOT::VecOps::RVec<int> isPV, ROOT::VecOps::RVec<float> var);
+
+    // Function to get the absolute values of an RVec<float>
+  ROOT::VecOps::RVec<float> abs_RVec(const ROOT::VecOps::RVec<float> values);
+
+  // Function to normalise 3-vector thrust components
+  float norm_RVec_x(float x, float y,float z);
+
+  // Define function to sum entries within an event if should_eval is true
+  float sum_RVec_withcond(ROOT::VecOps::RVec<int> should_eval, ROOT::VecOps::RVec<float> values); 
+
+  // function to sum RVec components with a condition
+  ROOT::VecOps::RVec<float> sum_RVec_with2cond(ROOT::VecOps::RVec<int> should_eval1, ROOT::VecOps::RVec<int> should_eval2, ROOT::VecOps::RVec<float> values);
+
+
+  // Get vtx d2PV thrust CosTheta for hemis assignment - similar to function in algorithms but returns 0 for PV if put shouldeval=1-isPV
+  ROOT::VecOps::RVec<float> getAxisCosTheta_withcond(const ROOT::VecOps::RVec<float> & axis,
+	                                                    const ROOT::VecOps::RVec<float> & px,
+																											const ROOT::VecOps::RVec<float> & py,
+																											const ROOT::VecOps::RVec<float> & pz,
+                                                      const ROOT::VecOps::RVec<int> & should_eval);
+
+  // return log of the input value - default value for input of 0 is an input
+  float log_with_0_map(float input_var, float zeromap);  
+
+  // return log of the input value - default value for input of 0 is an input
+  float fromPV_map(float input_var);                                         
+  
+
+  //Get true B production flavour (no assumption on which hemisphere it lands in)
+  int get_B_prod_flav_from_nunu(const ROOT::VecOps::RVec<int>& mc_pdg,
+                              const ROOT::VecOps::RVec<int>& mc_m1);
+
+  ROOT::VecOps::RVec<int> get_RP_idx_from_MC(
+                        ROOT::VecOps::RVec<int> reco_ind,//MCRecoAssociationsRec
+                        ROOT::VecOps::RVec<int> mc_ind,//MCRecoAssociationsGen
+                        ROOT::VecOps::RVec<edm4hep::MCParticleData> mc);
+
+  ROOT::VecOps::RVec<edm4hep::MCParticleData> get_rec_true_KS(
+    ROOT::VecOps::RVec<edm4hep::MCParticleData> mc_particles,//Particle
+    ROOT::VecOps::RVec<int> mc_children,//ParticleChildren
+    ROOT::VecOps::RVec<int> mc_reco_idx); //vector matching MC shape containing index of Rec particle (from get_RP_idx_from_MC) - if not -9 then reco [see above]
+
+
 
 }//end NS myUtils
 

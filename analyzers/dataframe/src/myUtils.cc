@@ -247,6 +247,23 @@ get_VertexObject(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertexMC> mcver,
 			  ROOT::VecOps::RVec<int> recin,
 			  ROOT::VecOps::RVec<int> mcin){
 
+
+  return get_VertexObject(mcver, reco, tracks, recin, mcin, 4.5, 20e-3, 300); 
+
+}
+
+
+//ensure takes correct BSC
+ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex>
+get_VertexObject(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertexMC> mcver,
+			  ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> reco,
+			  ROOT::VecOps::RVec<edm4hep::TrackState> tracks,
+			  ROOT::VecOps::RVec<int> recin,
+			  ROOT::VecOps::RVec<int> mcin,
+              double bsc_sigmax,
+              double bsc_sigmay,
+              double bsc_sigmaz){
+
   ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> result;
 
   ROOT::VecOps::RVec< ROOT::VecOps::RVec<int> > rp2mc = ReconstructedParticle2MC::getRP2MC_indexVec(recin, mcin, reco);
@@ -272,7 +289,7 @@ get_VertexObject(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertexMC> mcver,
     if (recoparticles.size()<2)continue;
 
     VertexingUtils::FCCAnalysesVertex TheVertex;
-    if (v==0) TheVertex = VertexFitterSimple::VertexFitter(1,recoparticles, tracks, true, 4.5, 20e-3, 300 );
+    if (v==0) TheVertex = VertexFitterSimple::VertexFitter(1,recoparticles, tracks, true, bsc_sigmax, bsc_sigmay, bsc_sigmaz );
     //if (v==0) TheVertex = VertexFitterSimple::VertexFitter(1,recoparticles, tracks);
     else TheVertex = VertexFitterSimple::VertexFitter(0,recoparticles, tracks);
     if (std::isnan(TheVertex.vertex.chi2))continue;
@@ -306,11 +323,10 @@ merge_VertexObjet(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> in){
   return in;
 }
 
-
-std::vector<std::vector<int>> get_Vertex_ind(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex){
-  std::vector<std::vector<int>> result;
+ROOT::VecOps::RVec<ROOT::VecOps::RVec<int>> get_Vertex_ind(ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex){
+  ROOT::VecOps::RVec<ROOT::VecOps::RVec<int>> result;
   for (auto &p:vertex){
-    std::vector<int> tmp;
+    ROOT::VecOps::RVec<int> tmp;
     for (size_t i = 0; i < p.reco_ind.size(); ++i) tmp.push_back(p.reco_ind.at(i));
     result.push_back(tmp);
   }
@@ -2198,6 +2214,487 @@ int has_anglethrust_emin(ROOT::VecOps::RVec<float> angle){
     if (cos(p)>0.)return 1;
   return -1;
 }
+
+//////////////////////////////////////////////////
+//// B2Inv and BflavTag functions ////
+/////////////////////////////////////////////////
+
+ROOT::VecOps::RVec<edm4hep::MCParticleData> get_MCObject_fromRP (ROOT::VecOps::RVec<int> reco_ind,
+    ROOT::VecOps::RVec<int> mc_ind, 
+    ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> reco, 
+    ROOT::VecOps::RVec<edm4hep::MCParticleData> mc) {
+  edm4hep::MCParticleData placeholder;
+  ROOT::VecOps::RVec<edm4hep::MCParticleData> result;
+  result.resize(reco.size(), placeholder);
+
+  for (unsigned int i = 0; i < reco_ind.size(); ++i) {
+    result[reco_ind.at(i)] = mc.at(mc_ind.at(i));
+  }
+
+  return result;
+}
+
+ROOT::VecOps::RVec<ROOT::VecOps::RVec<int>> get_MCParentandGParent_fromRP (ROOT::VecOps::RVec<int> reco_ind, 
+    ROOT::VecOps::RVec<int> mc_ind, ROOT::VecOps::RVec<int> parents,
+    ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop, 
+    ROOT::VecOps::RVec<edm4hep::MCParticleData> mc) {
+  // result.at(0) == Parent0
+  // result.at(1) == Parent1
+  // result.at(2) == Grandparent0 (Parent0 of Parent0)
+  // result.at(3) == Grandparent1 (Parent1 of Parent0)
+  // result.at(4) == Grandparent2 (Parent0 of Parent1)
+  // result.at(5) == Grandparent3 (Parent1 of Parent1)
+  ROOT::VecOps::RVec<int> placeholder;
+  placeholder.resize(recop.size(), 0);
+  ROOT::VecOps::RVec< ROOT::VecOps::RVec<int> > result;
+  result.resize(6, placeholder);
+
+  for (unsigned int i = 0; i < reco_ind.size(); ++i) {
+    int parent0 = myUtils::getMC_parent(0, mc.at(mc_ind.at(i)), parents);
+    int parent1 = myUtils::getMC_parent(1, mc.at(mc_ind.at(i)), parents);
+    if (parent0 != -999) {
+      result[0][reco_ind.at(i)] = mc.at(parent0).PDG;
+      int gparent0 = myUtils::getMC_parent(0, mc.at(parent0), parents);
+      int gparent1 = myUtils::getMC_parent(1, mc.at(parent0), parents);
+      if (gparent0 != -999) result[2][reco_ind.at(i)] = mc.at(gparent0).PDG;
+      if (gparent1 != -999) result[3][reco_ind.at(i)] = mc.at(gparent1).PDG;
+    }
+
+    if (parent1 != -999) {
+      result[1][reco_ind.at(i)] = mc.at(parent1).PDG;
+      int gparent0 = myUtils::getMC_parent(0, mc.at(parent1), parents);
+      int gparent1 = myUtils::getMC_parent(1, mc.at(parent1), parents);
+      if (gparent0 != -999) result[4][reco_ind.at(i)] = mc.at(gparent0).PDG;
+      if (gparent1 != -999) result[5][reco_ind.at(i)] = mc.at(gparent1).PDG;
+    }
+  }
+
+  return result;
+}
+
+ROOT::VecOps::RVec<int> get_MCVertex_fromMC(ROOT::VecOps::RVec<edm4hep::MCParticleData> mc, 
+    ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertexMC> mcvertex) {
+  ROOT::VecOps::RVec<int> result;
+  for (size_t i = 0; i < mc.size(); ++i) {
+    for (size_t j = 0; j < mcvertex.size(); ++j) {
+      ROOT::VecOps::RVec<int> mc_ind = mcvertex.at(j).mc_ind;
+      if (std::find(mc_ind.begin(), mc_ind.end(), i) != mc_ind.end()) {
+        result.push_back(j);
+        break;
+      }
+    }
+    // If result is updated its length must be at least i+1
+    if (result.size() <= i) result.push_back(-999);
+  }
+
+  return result;
+}
+
+ROOT::VecOps::RVec<int> get_Vertex_fromRP(ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop,
+    ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex) {
+  ROOT::VecOps::RVec<int> result;
+  for (size_t i = 0; i < recop.size(); ++i) {
+    for (size_t j = 0; j < vertex.size(); ++j) {
+      ROOT::VecOps::RVec<int> reco_ind = vertex.at(j).reco_ind;
+      if (std::find(reco_ind.begin(), reco_ind.end(), i) != reco_ind.end()) {
+        result.push_back(j);
+        break;
+      }
+    }
+    // If result is updated its length must be at least i+1
+    if (result.size() <= i) result.push_back(-999);
+  }
+
+  return result;
+}
+
+int get_Vertex_fromRPindex(int index, 
+    ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex) {
+  int result=-999;
+  for (size_t i = 0; i < vertex.size(); ++i) {
+    ROOT::VecOps::RVec<int> reco_ind = vertex.at(i).reco_ind;
+    if (std::find(reco_ind.begin(), reco_ind.end(), index) != reco_ind.end()) {
+      result = i;
+      break;
+    }
+  }
+
+  return result;
+}
+
+get_RP_inHemis::get_RP_inHemis(bool arg_pos){
+  _pos = arg_pos;
+}
+ROOT::VecOps::RVec<int> get_RP_inHemis::operator() (ROOT::VecOps::RVec<float> thrustcostheta) {
+  ROOT::VecOps::RVec<int> result;
+  for (auto &angle:thrustcostheta){
+    // Initialise with `indeterminate` value
+    int value = -1;
+
+    // Emin hemisphere
+    if (_pos){
+      if (angle > 0.) value = 1;
+      else if (angle < 0.) value = 0;
+    }
+
+    // Emax hemisphere
+    else {
+      if (angle < 0.) value = 1;
+      else if (angle > 0.) value = 0;
+    }
+
+    result.push_back(value);
+  }
+
+  return result;
+}
+
+// Check if K_L should be included
+ROOT::VecOps::RVec<HemisParticleInfo> get_RP_HemisInfo(ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> recop,
+    ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex> vertex, ROOT::VecOps::RVec<int> should_eval) {
+  HemisParticleInfo lept;
+  HemisParticleInfo kaon;
+  HemisParticleInfo pion;
+
+  for (size_t i = 0; i < recop.size(); ++i) {
+    // Check for 0 (dont evaluate) or -1 (error)
+    if (should_eval.at(i) != 1) continue;
+    #if edm4hep_VERSION > EDM4HEP_VERSION(0, 10, 5)
+      int pid = recop.at(i).PDG;
+    #else
+      int pid = recop.at(i).type;
+    #endif
+
+    // Lepton
+    if ((pid == 11) || (pid == 13)) {
+      lept.num++;
+      if (recop.at(i).energy > lept.maxE) {
+        lept.maxE = recop.at(i).energy;
+        lept.index = i;
+      }
+    }
+    // Kaon
+    if (pid == 321) {
+      kaon.num++;
+      if (recop.at(i).energy > kaon.maxE) {
+        kaon.maxE = recop.at(i).energy;
+        kaon.index = i;
+      }
+    }
+    // Pion
+    if (pid == 211) {
+      pion.num++;
+      if (recop.at(i).energy > pion.maxE) {
+        pion.maxE = recop.at(i).energy;
+        pion.index = i;
+      }
+    }
+  }
+
+  int l_vtxind = get_Vertex_fromRPindex(lept.index, vertex);
+  int k_vtxind = get_Vertex_fromRPindex(kaon.index, vertex);
+  int p_vtxind = get_Vertex_fromRPindex(pion.index, vertex);
+
+  // -999 indicates that the corresponding vertex is not found
+  if (l_vtxind != -999) lept.fromPV = vertex.at(l_vtxind).vertex.primary;
+  if (k_vtxind != -999) kaon.fromPV = vertex.at(k_vtxind).vertex.primary;
+  if (p_vtxind != -999) pion.fromPV = vertex.at(p_vtxind).vertex.primary;
+  
+  ROOT::VecOps::RVec<HemisParticleInfo> result {lept, kaon, pion};
+  return result;
+}
+
+
+// If `sign` is 1 return value, else return -(value)
+ROOT::VecOps::RVec<float> get_VertexFeature_signed(ROOT::VecOps::RVec<int> sign,
+    ROOT::VecOps::RVec<float> feature_vtx) {
+  ROOT::VecOps::RVec<float> result;
+
+  for (size_t i = 0; i < feature_vtx.size(); ++i) {
+    if (sign.at(i) == 1) result.push_back(feature_vtx.at(i));
+    else result.push_back(-feature_vtx.at(i));
+  }
+
+  return result;
+}
+
+
+
+/**********************************
+  Additional Ella functions
+ *********************************/
+
+
+// Define a function that filters Rec_vtx_m based on Rec_vtx_isPV
+ROOT::VecOps::RVec<float> filter_vtx_variable_onisPV(ROOT::VecOps::RVec<int> isPV, ROOT::VecOps::RVec<float> var ) {
+  ROOT::VecOps::RVec<float> result;
+    for (size_t i = 0; i < var.size(); ++i) {
+      if (isPV[i] == 1) {
+          result.push_back(var.at(i));
+      }
+    }
+    return result;
+}
+
+// Function to get the absolute values of an RVec<float>
+ROOT::VecOps::RVec<float> abs_RVec(const ROOT::VecOps::RVec<float> values) {
+    ROOT::VecOps::RVec<float> abs_values(values.size());
+    for (size_t i = 0; i < values.size(); ++i) {
+        abs_values[i] = std::abs(values[i]);
+    }
+    return abs_values;
+}
+
+// Function to normalise 3-vector thrust components
+float norm_RVec_x(float x, float y,float z) {
+    float normalised_x;
+    normalised_x = x/sqrt(x*x+y*y+z*z);
+    return normalised_x;
+}
+
+
+// function to sum RVec components with a condition
+float sum_RVec_withcond(ROOT::VecOps::RVec<int> should_eval, ROOT::VecOps::RVec<float> values) {
+  ROOT::VecOps::RVec<float> values_to_eval;
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (should_eval.at(i) == 1) values_to_eval.push_back(values.at(i));
+  }
+
+  auto sum = ROOT::VecOps::Sum(values_to_eval);
+
+  return float(sum);
+}
+  //ROOT::VecOps::RVec<float> result; 
+  //result.push_back(float(sum));
+  //return result;
+
+
+// function to sum RVec components with two conditions
+ROOT::VecOps::RVec<float> sum_RVec_with2cond(ROOT::VecOps::RVec<int> should_eval1, ROOT::VecOps::RVec<int> should_eval2, ROOT::VecOps::RVec<float> values) {
+  ROOT::VecOps::RVec<float> values_to_eval;
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (should_eval1.at(i) == 1 && should_eval2.at(i) == 1) values_to_eval.push_back(values.at(i));
+  }
+
+  auto sum = ROOT::VecOps::Sum(values_to_eval);
+
+  ROOT::VecOps::RVec<float> result; 
+  result.push_back(float(sum));
+  return result;
+}
+
+
+
+// Get vtx d2PV thrust CosTheta for hemis assignment - similar to function in algorithms but returns 0 for PV if put shouldeval=1-isPV
+ROOT::VecOps::RVec<float> getAxisCosTheta_withcond(const ROOT::VecOps::RVec<float> & axis,
+	                                                    const ROOT::VecOps::RVec<float> & px,
+																											const ROOT::VecOps::RVec<float> & py,
+																											const ROOT::VecOps::RVec<float> & pz,
+                                                      const ROOT::VecOps::RVec<int> & should_eval){
+
+  float thrust_mag = sqrt(axis[1]*axis[1] + axis[3]*axis[3] + axis[5]*axis[5]);
+  ROOT::VecOps::RVec<float> result;
+  for (unsigned int i =0; i<px.size(); i++){
+    if (should_eval[i]==0){
+      float value = 0;
+      result.push_back(value);
+    }
+    else{
+      float value = (px[i]*axis[1] + py[i]*axis[3] + pz[i]*axis[5])/(sqrt(px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i])*thrust_mag);
+      result.push_back(value);    
+    }
+  }
+  return result;
+}
+
+
+// return log of the input value - default value for input of 0 is an input
+float log_with_0_map(float input_var, float zeromap) {
+    float output;
+    if (input_var != 0){
+      output = std::log(input_var);
+    }
+    else{output = zeromap;
+    }
+    return output;
+}
+
+// return log of the input value - default value for input of 0 is an input
+float fromPV_map(float input_var) {
+    if (input_var == -999){
+        return -1;
+      }
+      else{return input_var;
+      }
+}
+
+
+// Get production flavour for B or Bs by tracing from a nu-anu pair across the whole event
+// Note cannot assume that inv decay is always on the SS
+int get_B_prod_flav_from_nunu(const ROOT::VecOps::RVec<int>& mc_pdg,
+                              const ROOT::VecOps::RVec<int>& mc_m1) {
+  
+  std::vector<int> b_ancestors_nu;
+  std::vector<int> b_ancestors_anu;
+
+  // Find all neutrinos and antineutrinos in the event and trace to their B parent
+  for (size_t i = 0; i < mc_pdg.size(); ++i) {
+    int pdg = mc_pdg[i];
+    
+    // Check for neutrinos (12: ve, 14: vmu, 16: vtau)
+    bool is_nu  = (pdg == 12 || pdg == 14 || pdg == 16);
+    bool is_anu = (pdg == -12 || pdg == -14 || pdg == -16);
+
+    if (!is_nu && !is_anu) continue;
+
+    // Trace up the chain using mc_m1 to find a B meson ancestor
+    int curr_idx = mc_m1[i];
+    int b_ancestor_idx = -1;
+
+    while (curr_idx >= 0 && curr_idx < mc_pdg.size()) {
+      int parent_pdg = std::abs(mc_pdg[curr_idx]);
+      
+      // Check if the ancestor is a B0 (511) or Bs0 (531)
+      if (parent_pdg == 511 || parent_pdg == 531) {
+        b_ancestor_idx = curr_idx;
+        break;
+      }
+
+      // If dont find Bs0 or B0 break on reaching quark and reurun indx -1
+      if (parent_pdg == 5) {
+        b_ancestor_idx = -1;
+        break;
+      }
+      
+      
+      curr_idx = mc_m1[curr_idx];
+    }
+
+    // Store the B meson ancestor index based on whether we started from a nu or anu
+    if (b_ancestor_idx != -1) {
+      if (is_nu)  b_ancestors_nu.push_back(b_ancestor_idx);
+      if (is_anu) b_ancestors_anu.push_back(b_ancestor_idx);
+    }
+  }
+
+  // Find a B meson that is the ancestor to BOTH a neutrino and an antineutrino
+  int target_b_idx = -1;
+  for (int b_idx : b_ancestors_nu) {
+    if (std::find(b_ancestors_anu.begin(), b_ancestors_anu.end(), b_idx) != b_ancestors_anu.end()) {
+      target_b_idx = b_idx;
+      break; 
+    }
+  }
+
+  // If no B meson parent with a nu-nub pair was found, return 0
+  if (target_b_idx == -1) {
+    return 0; 
+  }
+  
+  // Trace up the oscillation chain to ensure production flavour
+  int current_idx = target_b_idx;
+  int current_pdg = mc_pdg[current_idx];
+  
+  while (true) {
+    int parent_idx = mc_m1[current_idx];    
+    
+    // Safety check for valid parent index bounds
+    if (parent_idx < 0 || parent_idx >= mc_pdg.size()) break;
+
+    int parent_pdg = mc_pdg[parent_idx];
+    
+    // If the parent is the same type of B meson, then it is in the oscillation chain
+    if (std::abs(parent_pdg) == std::abs(current_pdg)) {
+      current_idx = parent_idx;
+      current_pdg = parent_pdg;
+    } else {
+      // Have found production type, break infinite loop
+      break; 
+    }
+  }
+  
+  return current_pdg;
+}
+
+// Returns an array of length MC particles with reconstructed index, or -1 if not reconstructed.
+ROOT::VecOps::RVec<int> get_RP_idx_from_MC(
+    
+    ROOT::VecOps::RVec<int> reco_ind,//MCRecoAssociationsRec
+    ROOT::VecOps::RVec<int> mc_ind,//MCRecoAssociationsGen
+    ROOT::VecOps::RVec<edm4hep::MCParticleData> mc){ //Particle object
+    
+  // Initialize the vector with -999 (for not reconstructed)
+  ROOT::VecOps::RVec<int> result(mc.size(), -999);
+
+  // Fill in the valid indices
+  for (unsigned int i = 0; i < reco_ind.size(); ++i) {
+    result[mc_ind.at(i)] = reco_ind.at(i);
+  }
+
+  return result;
+}
+
+
+
+//Function to return MC KS where all daughters in recop particles
+ROOT::VecOps::RVec<edm4hep::MCParticleData> get_rec_true_KS(
+    ROOT::VecOps::RVec<edm4hep::MCParticleData> mc_particles,//Particle
+    ROOT::VecOps::RVec<int> mc_children,//ParticleChildren
+    ROOT::VecOps::RVec<int> mc_reco_idx //vector matching MC shape containing index of Rec particle (from get_RP_idx_from_MC) - if not -9 then reco [see above]
+) {
+    ROOT::VecOps::RVec<edm4hep::MCParticleData> result;
+
+    for (size_t i = 0; i < mc_particles.size(); ++i) {
+        // select ks
+        if (mc_particles.at(i).PDG == 310) {
+            
+            // get indices of the MC daughters for given KS
+            int d_idx_start = mc_particles.at(i).daughters_begin;
+            int d_idx_end = mc_particles.at(i).daughters_end;
+
+            if (d_idx_end - d_idx_start < 1) continue;// If no daughters, skip
+            
+            bool all_reconstructed = true;
+
+            for (int d_idx = d_idx_start; d_idx < d_idx_end; ++d_idx) {
+
+                //check if daughters decay (ie. if pi0) - if they do then instead cehck granddaughters
+                int gd_idx_start =  mc_particles.at(mc_children.at(d_idx)).daughters_begin;
+                int gd_idx_end = mc_particles.at(mc_children.at(d_idx)).daughters_end;
+
+                if (gd_idx_end - gd_idx_start > 0) {
+                    // if granddaughters, check all of them are reco
+                    for (int gd_idx = gd_idx_start; gd_idx < gd_idx_end; ++gd_idx) {
+                        if (mc_reco_idx.at(mc_children.at(gd_idx)) == -999) {//Check gd index exists in our Reco-to-MC map
+                            all_reconstructed = false;
+                            break; // A granddaughter is missing
+                        }
+                    }
+
+                } 
+                else{// daughter stable therefore check daughter reco
+                  
+                  if (mc_reco_idx.at(mc_children.at(d_idx))==-999){
+                    all_reconstructed = false;
+                    break;
+                  }
+                }
+
+                // If any branch of the decay failed to reconstruct, stop checking this KS
+                if (!all_reconstructed) break; 
+            }
+    
+            //If every daughter was found in the reco list, save the KS
+            if (all_reconstructed) {
+                result.push_back(mc_particles.at(i));
+            }
+        }
+    }
+    return result;
+}
+  
+
+
 
 }//end NS myUtils
 

@@ -1,0 +1,98 @@
+---
+fcc-FT-vars:
+  #reconstructed variables
+  - Rec_q
+  - Rec_m
+  - Rec_p
+  - Rec_px
+  - Rec_py
+  - Rec_pz
+  - Rec_eta
+  - Rec_phi
+  - Rec_eOverP
+  #current PID
+  - Rec_type #as comparison to Rec_true_PDG
+  - Rec_true_PDG
+  - Rec_true_M1
+  - Rec_true_M2
+  - Rec_true_orivtx_x
+  - Rec_true_orivtx_y
+  - Rec_true_orivtx_z
+
+  #IP-like (from (0,0,0)
+  - Rec_track_d0
+  - Rec_track_d0_sig
+  - Rec_track_z0
+  - Rec_track_z0_sig
+
+  #IP-like but now from PV
+  - Rec_track_d0_fromRecPV
+  - Rec_track_z0_fromRecPV
+  - Rec_track_d0_fromMCPV
+  - Rec_track_z0_fromMCPV
+
+  
+  #event variables
+  - EVT_p
+  - EVT_e
+  - EVT_sum_Rec_px
+  - EVT_sum_Rec_py
+  - EVT_sum_Rec_pz
+  - EVT_nCharged
+  - EVT_nNeutral
+  - EVT_nPhotons
+  #- EVT_nKlong #removing for now 
+  #- Rec_track_n #double check number of tracks match EVT_nCharged and does as expect
+  
+  #B flavour on production
+  - EVT_sigB_MCqTag
+
+  # Rec variables for FT
+  - Rec_track_dNdx
+  #- Rec_track_TOF # remove for now as only helpful if have first and last hits
+  - Rec_track_dNdx_paddedNeutrals
+  - MC_nKS
+  - Rec_true_nKS
+
+  
+  #Intermediate variables kept in for now
+  - Rec_photon_indices
+  - EVT_sigB_MCprodFlav
+  - MC_KS
+  - MC_recParticle_indx
+  - Rec_true_KS
+  - Rec_trackStates # I dont believe this is helpful but we'll see
+  - RecoParticlesPIDAtVertex
+  - Rec_PrimaryVertex
+  - MC_PrimaryVertex
+
+  #Additional variables kept to allow check for now
+  #MC vars so can check Btag
+  - MC_PDG
+  - MC_M1
+  - MC_M2
+  - MC_D1
+  - MC_D2
+  - MC_D3          
+  - MC_D4
+  - MC_e
+  - MC_m
+  - MC_q
+  - MC_p
+  - MC_pt
+  - MC_px
+  - MC_py
+  - MC_pz
+  - MC_eta
+  - MC_phi
+  - MC_orivtx_x
+  - MC_orivtx_y
+  - MC_orivtx_z
+  - EVT_unitThrust_x
+  - EVT_unitThrust_y
+  - EVT_unitThrust_z
+
+
+
+
+
