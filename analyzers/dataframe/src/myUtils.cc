@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <vector>
 
+// EDM4hep
+#include "edm4hep/EDM4hepVersion.h"
+
 #include "FCCAnalyses/myUtils.h"
 #include "FCCAnalyses/VertexFitterSimple.h"
 #include "FCCAnalyses/ReconstructedParticle.h"
