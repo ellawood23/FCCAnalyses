@@ -9,7 +9,7 @@ import numpy as np
 # MANDATORY ----> replace the default string with the path to the working directory in the FCCAnalyses repo
 FCCAnalysesPath = "/usera/ejnw2/PhD/FCC_FT/FCCAnalyses/examples/FCCee/flavour/BflavTag/"
 FCCAnalysesPath = os.path.abspath(FCCAnalysesPath)
-FT_outputDir = "/r02/lhcb/ejnw2/FCC_FT/FCC_FT_outputs_full_July2026"
+FT_outputDir = "/r02/lhcb/ejnw2/FCC_FT/FCC_FT_outputs_full_July2026/tuples"
 
 
 # RUNNING MODE
