@@ -112,6 +112,33 @@ namespace ReconstructedParticle2Track{
                 const ROOT::VecOps::RVec<edm4hep::TrackData> &trackdata, // EFlowTrack
                 const ROOT::VecOps::RVec<edm4hep::Quantity> &dNdx);       // EFlowTrack_2
 
+  /// Return the track length value for a track to a reconstructed particle
+  ROOT::VecOps::RVec<float> getRP2TRK_length(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<int> &track_indices,
+    const ROOT::VecOps::RVec<float> &length);
+
+  ROOT::VecOps::RVec<float> getRP2TRK_length(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &some_tracks, //reco track states
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &FullTracks, //EFlowTrack_1
+    const ROOT::VecOps::RVec<float> &length);
+  
+  /// Return the TOF value for a track to a reconstructed particle
+  ROOT::VecOps::RVec<float> getRP2TRK_TOF(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<int> &track_indices,
+    const ROOT::VecOps::RVec<edm4hep::TrackData> &trackdata, // Eflowtrack
+    const ROOT::VecOps::RVec<edm4hep::TrackerHitData> &trackerhits);
+
+  /// Return the TOF value for a track to a reconstructed particle - overwrite so can input trackstate rather than index
+  ROOT::VecOps::RVec<float> getRP2TRK_TOF(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &some_tracks, //reco track states
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &FullTracks,
+    const ROOT::VecOps::RVec<edm4hep::TrackData> &trackdata, // Eflowtrack
+    const ROOT::VecOps::RVec<edm4hep::TrackerHitData> &trackerhits);
+
   /// Return the variance (not the sigma)  of the the Phi of a track to a reconstructed particle
   ROOT::VecOps::RVec<float> getRP2TRK_phi_cov (ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> in,
 					       ROOT::VecOps::RVec<edm4hep::TrackState> tracks);

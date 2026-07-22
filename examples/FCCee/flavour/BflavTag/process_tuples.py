@@ -571,8 +571,12 @@ class RDFanalysis():
             .Define("Rec_track_dNdx_paddedNeutrals", "ReconstructedParticle2Track::getRP2TRK_dNdX(RecoParticlesPIDAtVertex, Rec_trackStates, EFlowTrack_1, EFlowTrack, EFlowTrack_2)")
 
             #Also define TOF using TrackerHits: RVec<edm4hep::TrackerHit3DData> object
-            # remove for now as also need first and last hits to be helpful
-            #.Define("Rec_track_TOF","ReconstructedTrack::tracks_TOF(Rec_trackStates, EFlowTrack_1, EFlowTrack, TrackerHits)")
+            .Define("Rec_track_TOF","ReconstructedTrack::tracks_TOF(Rec_trackStates, EFlowTrack_1, EFlowTrack, TrackerHits)")
+            .Define("Rec_track_length", "ReconstructedTrack::tracks_length(Rec_trackStates, EFlowTrack_1, EFlowTrack_L)")
+
+            .Define("Rec_track_TOF_paddedNeutrals","ReconstructedParticle2Track::getRP2TRK_TOF(RecoParticlesPIDAtVertex, Rec_trackStates, EFlowTrack_1, EFlowTrack, TrackerHits)")
+            .Define("Rec_track_length_paddedNeutrals", "ReconstructedParticle2Track::getRP2TRK_length(RecoParticlesPIDAtVertex, Rec_trackStates, EFlowTrack_1, EFlowTrack_L)")
+
 
             # Get number of KS (various assumption levels)
             #number of MC KS

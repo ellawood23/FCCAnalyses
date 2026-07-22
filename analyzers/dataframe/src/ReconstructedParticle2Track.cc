@@ -315,7 +315,7 @@ getRP2TRK_Z0_sig(ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> in,
   return result;
 }
 
-// Add new dNdx functions that pad neutral reco particles like for d0/z0
+// Add new dNdx functions that pad neutral reco particles like for d0/z0 -----------------------------------
 
 ROOT::VecOps::RVec<float> getRP2TRK_dNdX(
     const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,
@@ -361,6 +361,89 @@ ROOT::VecOps::RVec<float> getRP2TRK_dNdX(
   ROOT::VecOps::RVec<int> indices = ReconstructedTrack::get_indices(some_tracks, FullTracks);
   return getRP2TRK_dNdX(reco_particles, indices, trackdata, dNdx);
 }
+
+// Add new TOF and track length functions that pad neutral reco particles like for d0/z0 ---------------------
+
+ROOT::VecOps::RVec<float> getRP2TRK_length(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<int> &track_indices,
+    const ROOT::VecOps::RVec<float> &length) { // collection EFlowTrack_L
+
+  ROOT::VecOps::RVec<float> results;
+  for (auto & p: reco_particles) {
+    if (p.tracks_begin<track_indices.size()){
+      auto i = p.tracks_begin;
+
+      int tk_idx = track_indices[i];
+      float l = length[tk_idx];
+      results.push_back(l);
+      }
+
+    else results.push_back(-9.);
+  }
+  return results;
+}
+
+ROOT::VecOps::RVec<float> getRP2TRK_length(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &some_tracks, //reco track states
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &FullTracks, //EFlowTrack_1
+    const ROOT::VecOps::RVec<float> &length) { // collection EFlowTrack_L
+
+  ROOT::VecOps::RVec<int> indices = ReconstructedTrack::get_indices(some_tracks, FullTracks);
+  return getRP2TRK_length(reco_particles, indices, length);
+}
+
+ROOT::VecOps::RVec<float> getRP2TRK_TOF(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<int> &track_indices,
+    const ROOT::VecOps::RVec<edm4hep::TrackData> &trackdata, // Eflowtrack
+    const ROOT::VecOps::RVec<edm4hep::TrackerHitData> &trackerhits) { //TrackerHits: RVec<edm4hep::TrackerHit3DData> object
+
+    ROOT::VecOps::RVec<float> results;
+    for (auto & p: reco_particles) {
+      if (p.tracks_begin<track_indices.size()){
+        auto i = p.tracks_begin;
+        int tk_idx = track_indices[i]; // index of the track in EFlowTrack_1
+
+        int tk_jdx = -1;
+        // find the index of the track in Eflowtrack (in principle, it is the same
+        // as tk_idx)
+        for (int k = 0; k < trackdata.size(); k++) {
+          int id_trackStates = trackdata[k].trackStates_begin;
+          if (id_trackStates == tk_idx) {
+            tk_jdx = k;
+            break;
+          }
+        }
+
+        float tof = -1;
+        if (tk_jdx >= 0) {
+          int idx_tout = trackdata[tk_jdx].trackerHits_end - 1; // at calo
+          edm4hep::TrackerHitData thits_2 = trackerhits.at(idx_tout);
+          float hit_time = thits_2.time; // in s
+          tof = hit_time * 1e12;         // in ps
+        }
+
+        results.push_back(tof);
+      }
+      else results.push_back(-9.);
+    }
+    return results;
+    }
+
+ROOT::VecOps::RVec<float> getRP2TRK_TOF(
+    const ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> &reco_particles,//reco particles
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &some_tracks, //reco track states
+    const ROOT::VecOps::RVec<edm4hep::TrackState> &FullTracks,
+    const ROOT::VecOps::RVec<edm4hep::TrackData> &trackdata, // Eflowtrack
+    const ROOT::VecOps::RVec<edm4hep::TrackerHitData> &trackerhits) { //TrackerHits: RVec<edm4hep::TrackerHit3DData> object
+  ROOT::VecOps::RVec<int> indices = ReconstructedTrack::get_indices(some_tracks, FullTracks);
+  return getRP2TRK_TOF(reco_particles, indices, trackdata, trackerhits);
+}
+
+
+// -----------------------------------
 
 ROOT::VecOps::RVec<float>
 getRP2TRK_phi(ROOT::VecOps::RVec<edm4hep::ReconstructedParticleData> in,
