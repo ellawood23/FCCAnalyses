@@ -9,7 +9,7 @@ import numpy as np
 # MANDATORY ----> replace the default string with the path to the working directory in the FCCAnalyses repo
 FCCAnalysesPath = "/usera/ejnw2/PhD/FCC_FT/FCCAnalyses/examples/FCCee/flavour/BflavTag/"
 FCCAnalysesPath = os.path.abspath(FCCAnalysesPath)
-FT_outputDir = "/r02/lhcb/ejnw2/FCC_FT/FCC_FT_outputs_full_July2026/tuples"
+FT_outputDir = "/r02/lhcb/ejnw2/FCC_FT/FCC_FT_outputs_full_July2026/tuples/"
 
 
 # RUNNING MODE
@@ -158,6 +158,3 @@ branching_fractions = {
 mass_Z = 91.188  # Ecm used in the winter2023 samples
 
 N_z = 6e12 # total number of Nz expected across all experiments during tera-Z run (from https://arxiv.org/pdf/2309.11353 Matt/Aidan paper)
-
-B_z = 2.0 #magnetic field strength from delphes card: https://raw.githubusercontent.com/HEP-FCC/FCC-config/winter2023/FCCee/Delphes/card_IDEA.tcl
-

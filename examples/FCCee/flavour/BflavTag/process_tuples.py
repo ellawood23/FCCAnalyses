@@ -60,17 +60,20 @@ class RDFanalysis():
         #bsc = [ 6, 25e-3, 400 ]
         bsc = cfg.BSC_opts['winter2023'] # list of sigmax,sigmay,sigmaz
         
-        '''print Hit/Track variables to find names!
-        all_columns = [str(c) for c in df.GetColumnNames()]
-        # Filter for anything that looks like a tracker hit collection
-        hit_columns = [c for c in all_columns if "Hit" in c or "Tracker" in c or "Track" in c]
-        
-        print("\n" + "="*50)
-        print("DEBUG: Found these track/hit related columns in the DataFrame:")
-        for col in sorted(hit_columns):
-            print(f" - {col}")
-        print("="*50 + "\n")'''
-
+        """## name of collections in EDM root files
+        collections = {
+            "GenParticles": "Particle",
+            "PFParticles": "ReconstructedParticles",
+            "PFTracks": "EFlowTrack",
+            "PFPhotons": "EFlowPhoton",
+            "PFNeutralHadrons": "EFlowNeutralHadron",
+            "TrackState": "EFlowTrack_1",
+            "TrackerHits": "TrackerHits",
+            "CalorimeterHits": "CalorimeterHits",
+            "dNdx": "EFlowTrack_2",
+            "PathLength": "EFlowTrack_L",
+            "Bz": "magFieldBz",
+        }"""
 
         df2 = (
             df
@@ -594,12 +597,10 @@ class RDFanalysis():
             
             .Define("Rec_PV_TLorentz",     "TLorentzVector(Rec_PrimaryVertex.position.x, Rec_PrimaryVertex.position.y, Rec_PrimaryVertex.position.z, 0.)") #time component not used so fill with 0.
             .Define("MC_PV_TLorentz",     "TLorentzVector(MC_PrimaryVertex.X(), MC_PrimaryVertex.Y(), MC_PrimaryVertex.Z(), 0.)")
-            .Define("Rec_track_d0_fromRecPV",     f"ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, Rec_PV_TLorentz, {cfg.B_z})")
-            .Define("Rec_track_z0_fromRecPV",     f"ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  Rec_PV_TLorentz, {cfg.B_z})")
-            .Define("Rec_track_d0_fromMCPV",     f"ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, MC_PV_TLorentz, {cfg.B_z})")
-            .Define("Rec_track_z0_fromMCPV",     f"ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  MC_PV_TLorentz, {cfg.B_z})")
-
-
+            .Define("Rec_track_d0_fromRecPV",     "ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, Rec_PV_TLorentz, magFieldBz.at(0))")
+            .Define("Rec_track_z0_fromRecPV",     "ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  Rec_PV_TLorentz, magFieldBz.at(0))")
+            .Define("Rec_track_d0_fromMCPV",     "ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, MC_PV_TLorentz, magFieldBz.at(0))")
+            .Define("Rec_track_z0_fromMCPV",     "ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  MC_PV_TLorentz, magFieldBz.at(0))")
 
         )
 

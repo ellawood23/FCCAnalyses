@@ -108,3 +108,9 @@ benchmark*json
 # Graphviz graphs
 *.dot
 *.png
+examples/FCCee/flavour/BflavTag/plots/speed_vs_momentum.pdf
+examples/FCCee/flavour/BflavTag/plots/TOF_test.pdf
+examples/FCCee/flavour/BflavTag/plots/track_length_test.pdf
+examples/FCCee/flavour/BflavTag/plots/track_length_vs_TOF_padded_zoom_test.pdf
+examples/FCCee/flavour/BflavTag/plots/track_length_vs_TOF_test.pdf
+examples/FCCee/flavour/BflavTag/plots/track_length_vs_TOF_zoom_test.pdf

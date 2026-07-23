@@ -61,6 +61,7 @@ fcc-FT-vars:
   #Additional variables kept to allow check for now
   #MC vars so can check Btag
   - MC_PDG
+  - MC_genStatus
   - MC_M1
   - MC_M2
   - MC_D1
