@@ -158,6 +158,15 @@ namespace MCParticle{
   /// return the z of the input MCParticles
   ROOT::VecOps::RVec<float> get_endPoint_z(ROOT::VecOps::RVec<edm4hep::MCParticleData> in);
 
+  /// return the x of the end point of the input MCParticles (not using the "endpoint" that is currently not filled)
+  ROOT::VecOps::RVec<double> get_endPoint_x(ROOT::VecOps::RVec<edm4hep::MCParticleData> in, ROOT::VecOps::RVec<int> ind );
+
+  /// return the y of the end point of the input MCParticles (not using the "endpoint" that is currently not filled)
+  ROOT::VecOps::RVec<double> get_endPoint_y(ROOT::VecOps::RVec<edm4hep::MCParticleData> in, ROOT::VecOps::RVec<int> ind );
+
+  /// return the z of the end point of the input MCParticles (not using the "endpoint" that is currently not filled)
+  ROOT::VecOps::RVec<double> get_endPoint_z(ROOT::VecOps::RVec<edm4hep::MCParticleData> in, ROOT::VecOps::RVec<int> ind );
+
   /// return the transverse momenta of the input MCParticles
   ROOT::VecOps::RVec<float> get_pt(ROOT::VecOps::RVec<edm4hep::MCParticleData> in);
 

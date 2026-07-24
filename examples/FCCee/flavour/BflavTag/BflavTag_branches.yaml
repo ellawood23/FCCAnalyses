@@ -81,6 +81,9 @@ fcc-FT-vars:
   - MC_orivtx_x
   - MC_orivtx_y
   - MC_orivtx_z
+  - MC_endPoint_x
+  - MC_endPoint_y
+  - MC_endPoint_z
   - MC_in_hemisEmin #flag for if in minimum energy hemisphere
   - EVT_unitThrust_x
   - EVT_unitThrust_y
@@ -98,6 +101,30 @@ fcc-FT-vars:
   - Rec_PrimaryVertex
   - MC_PrimaryVertex
 
+
+### Additional non-seeded vertex vars
+  - EVT_nSV
+  - Rec_SV_ntracks
+  - Rec_SV_chi2
+  - Rec_SV_nDOF
+  - Rec_SV_m
+  - Rec_SV_p
+  - Rec_SV_d2PV
+  - Rec_SV_d2PV_xy
+  - Rec_SV_x
+  - Rec_SV_y
+  - Rec_SV_z
+
+  - EVT_nV0
+  - Rec_V0_chi2
+  - Rec_V0_type
+  - Rec_V0_m
+  - Rec_V0_x
+  - Rec_V0_y
+  - Rec_V0_z
+
+  - EVT_nVtx
+  - Rec_vtx_n
 
 
 

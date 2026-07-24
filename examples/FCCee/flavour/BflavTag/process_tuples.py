@@ -113,9 +113,13 @@ class RDFanalysis():
             .Define("MC_pz",          "MCParticle::get_pz(Particle)")
             .Define("MC_eta",         "MCParticle::get_eta(Particle)")
             .Define("MC_phi",         "MCParticle::get_phi(Particle)")
-            .Define("MC_orivtx_x",    "MCParticle::get_vertex_x(Particle)")
-            .Define("MC_orivtx_y",    "MCParticle::get_vertex_y(Particle)")
-            .Define("MC_orivtx_z",    "MCParticle::get_vertex_z(Particle)")  
+            .Define("MC_orivtx_x",     "MCParticle::get_vertex_x(Particle)")
+            .Define("MC_orivtx_y",     "MCParticle::get_vertex_y(Particle)")
+            .Define("MC_orivtx_z",     "MCParticle::get_vertex_z(Particle)")
+            .Define("MC_endPoint_x",    "MCParticle::get_endPoint_x(Particle, ParticleChildren)")
+            .Define("MC_endPoint_y",    "MCParticle::get_endPoint_y(Particle, ParticleChildren)")
+            .Define("MC_endPoint_z",    "MCParticle::get_endPoint_z(Particle, ParticleChildren)")
+
 
             ##################################################
             ## MC variables to help with understanding event## - nb. these cause issues for taus
@@ -234,9 +238,7 @@ class RDFanalysis():
             #############################################
             ##            MC PrimaryVertex             ##
             #############################################
-            # --------------------------------------- #
-            #             MC_PV intermediate          #
-            # --------------------------------------- #
+
             .Define("MC_PrimaryVertex",  "MCParticle::get_EventPrimaryVertex(21)(Particle)") 
             
             .Define("MC_PV_x",  "MC_PrimaryVertex.X()") 
@@ -247,10 +249,7 @@ class RDFanalysis():
             #############################################
             ##           Find MC Vertices              ##
             #############################################
-            
-            # --------------------------------------- #
-            #    MC_vtx intermediate       #
-            # --------------------------------------- #
+
             .Define("MC_VertexObject",   "myUtils::get_MCVertexObject(Particle, ParticleParents)")
             
             .Define("MC_vtx_n",        "int(MC_VertexObject.size())")
@@ -263,9 +262,17 @@ class RDFanalysis():
             # MCParticle variable that needed MC_VertexObject
             .Define("MC_orivtx_ind",  "myUtils::get_MCVertex_fromMC(Particle, MC_VertexObject)")
             
+
+
             #############################################
             ##         Perform vertex fitting          ##
             #############################################
+
+
+            #-------------------------------------
+            #  Not seeded from MC    
+            #-------------------------------------
+
             # Get collection of tracks consistent with a PV (i.e. not downstream Ks, Lb etc. tracks)
             # using the get_PrimaryTracks() method with a beam spot constraint under the following parameters
             # bsc_sigma(x,y,z) = (6, 25e-3, 400)
@@ -277,10 +284,24 @@ class RDFanalysis():
             # Then fit the PV using these tracks
             .Define("Rec_PrimaryVertexObject", f"VertexFitterSimple::VertexFitter_Tk( 1, Rec_PrimaryTracks, true, {bsc[0]}, {bsc[1]}, {bsc[2]} )")
             .Define("Rec_PrimaryVertex",        "Rec_PrimaryVertexObject.vertex")
+            
             # Get secondary tracks
             .Define("Rec_SecondaryTracks",      "VertexFitterSimple::get_NonPrimaryTracks( EFlowTrack_1, Rec_PrimaryTracks )")
             .Define("Rec_n_secondary_tracks",   "ReconstructedParticle2Track::getTK_n( Rec_SecondaryTracks )")
-            # We don't actually do anything with the secondary tracks
+            
+            #Now add SV fit too using LCFIPlus (without jet clustering)
+            #letting V0_rej, chi2_cut, invM_cut, chi2Tr_cut all resort to default values for now: V0_rej = True, chi2_cut= 9, invM_cut=10, chi2Tr_cut=5
+            .Define("Rec_SecondaryVertexObject",  "VertexFinderLCFIPlus::get_SV_event(Rec_SecondaryTracks, EFlowTrack_1,  Rec_PrimaryVertexObject)")
+            
+            # Add back in V0 vertex objects (removed with V0_rej = True in LCFIPlus) - tight true to match what removed from SVs, chi2_cut left as default ie. 9 
+            # V0 vertices essentially KS), Lambda0 and photon conversion
+            .Define("Rec_V0VertexV0Object",  "VertexFinderLCFIPlus::get_V0s(Rec_SecondaryTracks, Rec_PrimaryVertexObject, true)") #FCCAnalysesV0 type
+            .Define("Rec_V0VertexObject",  "Rec_V0VertexV0Object.vtx") #FCCAnalysesVertex type
+
+
+            #-------------------------------------------------------------------------
+            #  Also fit all vertices seeded from MC (for comparison)
+            #--------------------------------------------------------------------------
 
             # get all MC vertices
             #.Define("MC_VertexObject",          "myUtils::get_MCVertexObject(Particle, ParticleParents)") #defined earlier
@@ -292,25 +313,58 @@ class RDFanalysis():
             # now update reco momentum based on the rec vertex position
             .Define("RecoParticlesPIDAtVertex",  "myUtils::get_RP_atVertex(RecoParticlesPID, Rec_VertexObject)")
 
-            #############################################
-            ##         Filter events with no PV        ##
-            # NEEDED even if no other cuts otherwise throws a huge strop over TypeError: could not convert argument 3, in ROOT::RDF::RResultPtr<ROOT::RDF::RInterface<ROOT::Detail::RDF::RLoopManager,void> > ROOT::RDF::RInterface<ROOT::Detail::RDF::RRange<ROOT::Detail::RDF::RLoopManager>,void>::Snapshot(basic_string_view<char,char_traits<char> > treename, basic_string_view<char,char_traits<char> > filename, initializer_list<string> columnList, const ROOT::RDF::RSnapshotOptions& options = ROOT::RDF::RSnapshotOptions()) 
-            # This disappears provided this cut is in place!
-            #############################################
-            .Define("EVT_hasPV",                "myUtils::hasPV(Rec_VertexObject)")
-            .Filter("EVT_hasPV==1")
 
             #############################################
-            ##         Define vertex variables         ##
+            ##       Define non-seeded vertex variables  
             #############################################
-            # PV
+
+            # PV (non-seeded)
             .Define("Rec_PV_ntracks",  "float(Rec_PrimaryTracks.size())")
             .Define("Rec_PV_x",        "Rec_PrimaryVertex.position.x")
             .Define("Rec_PV_y",        "Rec_PrimaryVertex.position.y")
             .Define("Rec_PV_z",        "Rec_PrimaryVertex.position.z")
-            .Define("Rec_PV_chi2",     "Rec_PrimaryVertex.chi2") #chi2 of PV fit - used to check for if PV actually fitted
+            .Define("Rec_PV_chi2",     "Rec_PrimaryVertex.chi2") #chi2 of PV fit - used to check for if PV actually fitter
 
-            # All Rec Vertices
+            ## SV info 
+            .Define("EVT_nSV",               "VertexingUtils::get_n_SV(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_ntracks",               "VertexingUtils::get_VertexNtrk(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_chi2",            "VertexingUtils::get_chi2_SV(Rec_SecondaryVertexObject)") # SV chi2 (unnormalised) can also have normalised
+            .Define("Rec_SV_nDOF",            "VertexingUtils::get_nDOF_SV(Rec_SecondaryVertexObject)") 
+            .Define("Rec_SV_m",               "VertexingUtils::get_invM(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_p",               "VertexingUtils::get_pMag_SV(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_position",               "VertexingUtils::get_position_SV(Rec_SecondaryVertexObject)") # now need to turn into x,y,z
+            .Define("Rec_SV_x",              "ROOT::VecOps::Map(Rec_SV_position, std::mem_fn(&TVector3::X))")
+            .Define("Rec_SV_y",              "ROOT::VecOps::Map(Rec_SV_position, std::mem_fn(&TVector3::Y))")
+            .Define("Rec_SV_z",              "ROOT::VecOps::Map(Rec_SV_position, std::mem_fn(&TVector3::Z))")
+            .Define("Rec_SV_d2PV",            "VertexingUtils::get_d3d_SV(Rec_SecondaryVertexObject, Rec_PrimaryVertexObject)") # magnitude of vector of distances of all reconstructed SV from PV (in mm in 3D)
+            .Define("Rec_SV_d2PV_xy",          "VertexingUtils::get_dxy_SV(Rec_SecondaryVertexObject, Rec_PrimaryVertexObject)") #perpendicular projection of vector of distances of all reconstructed SV from PV (in mm in xy plane)
+
+            ##V0 info
+            .Define("EVT_nV0",               "VertexingUtils::get_n_SV(Rec_V0VertexObject)")
+            .Define("Rec_V0_chi2",            "VertexingUtils::get_chi2_SV(Rec_V0VertexObject)") # SV chi2 (unnormalised) can also have normalised
+            .Define("Rec_V0_nDOF",            "VertexingUtils::get_nDOF_SV(Rec_V0VertexObject)") 
+            .Define("Rec_V0_p",               "VertexingUtils::get_pMag_SV(Rec_V0VertexObject)")
+            .Define("Rec_V0_position",          "VertexingUtils::get_position_SV(Rec_V0VertexObject)") # now need to turn into x,y,z
+            .Define("Rec_V0_x",               "ROOT::VecOps::Map(Rec_V0_position, std::mem_fn(&TVector3::X))")
+            .Define("Rec_V0_y",               "ROOT::VecOps::Map(Rec_V0_position, std::mem_fn(&TVector3::Y))")
+            .Define("Rec_V0_z",               "ROOT::VecOps::Map(Rec_V0_position, std::mem_fn(&TVector3::Z))")
+            .Define("Rec_V0_d2PV",            "VertexingUtils::get_d3d_SV(Rec_V0VertexObject, Rec_PrimaryVertexObject)") 
+            .Define("Rec_V0_d2PV_xy",          "VertexingUtils::get_dxy_SV(Rec_V0VertexObject, Rec_PrimaryVertexObject)") 
+            .Define("Rec_V0_type",                 "VertexingUtils::get_pdg_V0(Rec_V0VertexV0Object)") #vector of V0 ID from reconstruction (ie. KS, lambda0 or photon conversion)
+            .Define("Rec_V0_m",                 "VertexingUtils::get_invM_V0(Rec_V0VertexV0Object)") # vector of invariant masses of all reconstructed V0
+
+            .Define("EVT_nVtx",                 "1+EVT_nSV+EVT_nV0")
+
+
+            #############################################
+            ##         Define seeded vertex variables         ##
+            #############################################
+
+            # Filter events with no seeded PV. Otherwise Snapshot would throw a strop
+            .Define("EVT_hasPV",                "myUtils::hasPV(Rec_VertexObject)")
+            .Filter("EVT_hasPV==1")
+            
+            # All Rec Vertices (seeded)
             .Define("Rec_vtx_n",               "float(Rec_VertexObject.size())")
             .Define("Rec_vtx_indRP",           "myUtils::get_Vertex_ind(Rec_VertexObject)")
             .Define("Rec_vtx_chi2",            "myUtils::get_Vertex_chi2(Rec_VertexObject)")
@@ -323,6 +377,7 @@ class RDFanalysis():
             .Define("Rec_vtx_xerr",            "myUtils::get_Vertex_xErr(Rec_VertexObject)")
             .Define("Rec_vtx_yerr",            "myUtils::get_Vertex_yErr(Rec_VertexObject)")
             .Define("Rec_vtx_zerr",            "myUtils::get_Vertex_zErr(Rec_VertexObject)")
+
 
             #############################################
             ##       Define reco particle variables    ##
@@ -340,8 +395,7 @@ class RDFanalysis():
             .Define("Rec_pz",        "ReconstructedParticle::get_pz(RecoParticlesPIDAtVertex)")
             .Define("Rec_eta",       "ReconstructedParticle::get_eta(RecoParticlesPIDAtVertex)")
             .Define("Rec_phi",       "ReconstructedParticle::get_phi(RecoParticlesPIDAtVertex)")
-            .Define("Rec_eOverP",    "Rec_e/Rec_p")
-            
+ 
             # Do MC association of reco particle to true MC particle
             .Define("MC_fromRP",           "myUtils::get_MCObject_fromRP(MCRecoAssociationsRec, MCRecoAssociationsGen, RecoParticlesPIDAtVertex, Particle)")
             .Define("Rec_true_PDG",        "MCParticle::get_pdg(MC_fromRP)")  # this true ID from MC
@@ -553,7 +607,7 @@ class RDFanalysis():
             #Repeat for Kl (PDG ID == 130)
             ## Having issues here as the RecoParticlesPIDAtVertex treats all neutral as Kl whereas when take from MC gives Kl, n as separate
             #.Define("Rec_Klong_indices", "myUtils::sel_PID(130)(RecoParticlesPIDAtVertex)") # intermediate
-            # Count photons
+            # Count KL
             #.Define("EVT_nKlong",       "float(Rec_Klong_indices.size())")
 
 

@@ -309,6 +309,60 @@ ROOT::VecOps::RVec<float> get_endPoint_z(ROOT::VecOps::RVec<edm4hep::MCParticleD
   return result;
 }
 
+ROOT::VecOps::RVec<double> get_endPoint_x(ROOT::VecOps::RVec<edm4hep::MCParticleData> in, ROOT::VecOps::RVec<int> ind )  {
+        // ( carefull : if a Bs has oscillated into a Bsbar, this returns the production vertex of the Bsbar )
+  ROOT::VecOps::RVec<double> result;
+  for (auto & p: in) {
+    edm4hep::Vector3d vertex(1e12, 1e12, 1e12);  // a default value for stable particles
+    int db = p.daughters_begin ;
+    int de = p.daughters_end;
+    if (db != de) { // particle unstable
+        int d1 = ind[db] ;   // first daughter
+        if ( d1 >= 0 && d1 < in.size() ) {
+            vertex = in.at(d1).vertex ;
+        }
+    }
+    result.push_back(vertex.x);
+  }
+  return result;
+}
+
+ROOT::VecOps::RVec<double> get_endPoint_y(ROOT::VecOps::RVec<edm4hep::MCParticleData> in, ROOT::VecOps::RVec<int> ind )  {
+        // ( carefull : if a Bs has oscillated into a Bsbar, this returns the production vertex of the Bsbar )
+  ROOT::VecOps::RVec<double> result;
+  for (auto & p: in) {
+    edm4hep::Vector3d vertex(1e12, 1e12, 1e12);  // a default value for stable particles
+    int db = p.daughters_begin ;
+    int de = p.daughters_end;
+    if (db != de) { // particle unstable
+        int d1 = ind[db] ;   // first daughter
+        if ( d1 >= 0 && d1 < in.size() ) {
+            vertex = in.at(d1).vertex ;
+        }
+    }
+    result.push_back(vertex.y);
+  }
+  return result;
+}
+
+ROOT::VecOps::RVec<double> get_endPoint_z(ROOT::VecOps::RVec<edm4hep::MCParticleData> in, ROOT::VecOps::RVec<int> ind )  {
+        // ( carefull : if a Bs has oscillated into a Bsbar, this returns the production vertex of the Bsbar )
+  ROOT::VecOps::RVec<double> result;
+  for (auto & p: in) {
+    edm4hep::Vector3d vertex(1e12, 1e12, 1e12);  // a default value for stable particles
+    int db = p.daughters_begin ;
+    int de = p.daughters_end;
+    if (db != de) { // particle unstable
+        int d1 = ind[db] ;   // first daughter
+        if ( d1 >= 0 && d1 < in.size() ) {
+            vertex = in.at(d1).vertex ;
+        }
+    }
+    result.push_back(vertex.z);
+  }
+  return result;
+}
+
 ROOT::VecOps::RVec<float> get_mass(ROOT::VecOps::RVec<edm4hep::MCParticleData> in) {
   ROOT::VecOps::RVec<float> result;
   for (auto & p: in) {
