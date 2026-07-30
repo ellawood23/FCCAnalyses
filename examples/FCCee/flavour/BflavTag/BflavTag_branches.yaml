@@ -9,15 +9,6 @@ fcc-FT-vars:
   - Rec_pz
   - Rec_eta
   - Rec_phi
-
-  #current PID
-  - Rec_type #as comparison to Rec_true_PDG
-  - Rec_true_PDG
-  - Rec_true_M1
-  - Rec_true_M2
-  - Rec_true_orivtx_x
-  - Rec_true_orivtx_y
-  - Rec_true_orivtx_z
   - Rec_in_hemisEmin # flag for if in minimum energy hemisphere
 
   #IP-like (from (0,0,0)
@@ -32,6 +23,18 @@ fcc-FT-vars:
   - Rec_track_d0_fromMCPV
   - Rec_track_z0_fromMCPV
 
+  #current PID
+  - Rec_type #as comparison to Rec_true_PDG
+  - Rec_true_PDG
+
+  #FT vars for PID
+  - Rec_track_dNdx
+  - Rec_track_TOF 
+  - Rec_track_length 
+  - Rec_track_dNdx_paddedNeutrals
+  - Rec_track_TOF_paddedNeutrals 
+  - Rec_track_length_paddedNeutrals 
+
   
   #event variables
   - EVT_p
@@ -39,27 +42,41 @@ fcc-FT-vars:
   - EVT_sum_Rec_px
   - EVT_sum_Rec_py
   - EVT_sum_Rec_pz
-  - EVT_nCharged
+
+  - EVT_nCharged #same as Rec_track_n
   - EVT_nNeutral
   - EVT_nPhotons
-  #- EVT_nKlong #removing for now 
-  #- Rec_track_n #double check number of tracks match EVT_nCharged and does as expect
-  
+  - EVT_nKS_MC
+  - EVT_nKS_recTrue
+
+
   #B flavour on production
   - EVT_sigB_MCqTag
 
-  # Rec variables for FT
-  - Rec_track_dNdx
-  - Rec_track_TOF 
-  - Rec_track_length 
-  - Rec_track_dNdx_paddedNeutrals
-  - Rec_track_TOF_paddedNeutrals 
-  - Rec_track_length_paddedNeutrals 
-  - MC_nKS
-  - Rec_true_nKS
+  #B momentum on decay
+  - EVT_sigB_MCp
+  - EVT_sigB_MCpx
+  - EVT_sigB_MCpy
+  - EVT_sigB_MCpz
+
+
 
   #Additional variables kept to allow check for now
+
+  #---------------------------------------------------
+  # parenting for looking at decay chains
+  #---------------------------------------------------
+
+  - Rec_true_M1
+  - Rec_true_M2
+  - Rec_true_orivtx_x #true parent and unsmeared x,y,z
+  - Rec_true_orivtx_y
+  - Rec_true_orivtx_z
+
+  #--------------------------------------
   #MC vars so can check Btag
+  #--------------------------------------
+
   - MC_PDG
   - MC_genStatus
   - MC_M1
@@ -90,19 +107,19 @@ fcc-FT-vars:
   - EVT_unitThrust_z
 
 
-#Intermediate variables kept in for now
-  - Rec_photon_indices
-  - EVT_sigB_MCprodFlav
-  - MC_KS
-  - MC_recParticle_indx
-  - Rec_true_KS
-  #- Rec_trackStates # I dont believe this is helpful but we'll see
-  - RecoParticlesPIDAtVertex
-  - Rec_PrimaryVertex
-  - MC_PrimaryVertex
-
-
+#-----------------------------------
+#  Vertexing vars as check
+#-----------------------------------
 ### Additional non-seeded vertex vars
+  - Rec_PV_ntracks
+  - Rec_PV_x
+  - Rec_PV_y
+  - Rec_PV_z
+  - Rec_PV_xerr
+  - Rec_PV_yerr
+  - Rec_PV_zerr
+  - Rec_PV_chi2
+  
   - EVT_nSV
   - Rec_SV_ntracks
   - Rec_SV_chi2
@@ -114,6 +131,9 @@ fcc-FT-vars:
   - Rec_SV_x
   - Rec_SV_y
   - Rec_SV_z
+  - Rec_SV_xerr
+  - Rec_SV_yerr
+  - Rec_SV_zerr
 
   - EVT_nV0
   - Rec_V0_chi2
@@ -122,9 +142,112 @@ fcc-FT-vars:
   - Rec_V0_x
   - Rec_V0_y
   - Rec_V0_z
+  - Rec_V0_xerr
+  - Rec_V0_yerr
+  - Rec_V0_zerr
 
   - EVT_nVtx
+
+  # Rec vtx info for comparison
   - Rec_vtx_n
+  - Rec_vtx_chi2
+  - Rec_vtx_isPV
+  - Rec_vtx_ntracks
+  - Rec_vtx_m
+  - Rec_vtx_x
+  - Rec_vtx_y
+  - Rec_vtx_z
+  - Rec_vtx_xerr
+  - Rec_vtx_yerr
+  - Rec_vtx_zerr
+  - Rec_vtx_d2PV_mag
+
+
+  #test new fits with raw momenta at vertex
+  - Rec_e_raw
+  - Rec_p_raw
+  - Rec_px_raw
+  - Rec_py_raw
+  - Rec_pz_raw
+  - EVT_p_raw
+  - EVT_e_raw
+  - Rec_in_hemisEmin_raw
+  - EVT_unitThrust_x_raw
+  - EVT_unitThrust_y_raw
+  - EVT_unitThrust_z_raw
+  - EVT_sum_Rec_px_raw
+  - EVT_sum_Rec_py_raw
+  - EVT_sum_Rec_pz_raw
+
+
+  #and from non-seeded fit
+  - Rec_e_vfit
+  - Rec_p_vfit
+  - Rec_px_vfit
+  - Rec_py_vfit
+  - Rec_pz_vfit
+  - EVT_p_vfit
+  - EVT_e_vfit
+  - Rec_in_hemisEmin_vfit
+  - EVT_unitThrust_x_vfit
+  - EVT_unitThrust_y_vfit
+  - EVT_unitThrust_z_vfit
+  - EVT_sum_Rec_px_vfit
+  - EVT_sum_Rec_py_vfit
+  - EVT_sum_Rec_pz_vfit
+
+  #additional test vars
+
+
+  - Rec_SVV0_d2PV
+  - Rec_SVV0_x
+  - Rec_SVV0_y
+  - Rec_SVV0_z
+  - Rec_SVV0_p
+  - Rec_PVSV_ntracks
+
+  - MC_PV_x
+  - MC_PV_y
+  - MC_PV_z
+  - MC_vtx_x
+  - MC_vtx_y
+  - MC_vtx_z
+  - MC_vtx_n
+  - MC_vtx_ntracks
+
+  #- Rec_PV_noBSC_ntracks
+  #- Rec_PV_noBSC_x
+  #- Rec_PV_noBSC_y
+  #- Rec_PV_noBSC_z
+
+  #- Rec_PV_noBSCtrkfind_ntracks
+  #- Rec_PV_noBSCtrkfind_x
+  #- Rec_PV_noBSCtrkfind_y
+  #- Rec_PV_noBSCtrkfind_z
+
+  #- Rec_PV_noBSCfit_ntracks
+  #- Rec_PV_noBSCfit_x
+  #- Rec_PV_noBSCfit_y
+  #- Rec_PV_noBSCfit_z
+
+
+
+
+
+
+  
+#Intermediate variables for FT as check
+  #- Rec_photon_indices
+  #- EVT_sigB_MCprodFlav
+  #- MC_KS
+  #- MC_recParticle_indx
+  #- Rec_true_KS
+  #- Rec_trackStates # I dont believe this is helpful but we'll see
+  #- RecoParticlesPIDAtVertex
+  #- Rec_PrimaryVertex
+  #- MC_PrimaryVertex
+
+
 
 
 

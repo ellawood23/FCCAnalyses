@@ -32,6 +32,8 @@ prodTag = cfg.fccana_opts['prodTag']
 
 #Optional: output directory, default is local running directory
 outputDir = cfg.fccana_opts['outputDir'][cfg.run_mode]
+outputDirEos = cfg.fccana_opts['outputDirEos'][cfg.run_mode]
+eosType = "eospublic"
 
 #Optional: analysisName, default is ""
 analysisName = cfg.fccana_opts['analysisName']
@@ -116,9 +118,9 @@ class RDFanalysis():
             .Define("MC_orivtx_x",     "MCParticle::get_vertex_x(Particle)")
             .Define("MC_orivtx_y",     "MCParticle::get_vertex_y(Particle)")
             .Define("MC_orivtx_z",     "MCParticle::get_vertex_z(Particle)")
-            .Define("MC_endPoint_x",    "MCParticle::get_endPoint_x(Particle, ParticleChildren)")
-            .Define("MC_endPoint_y",    "MCParticle::get_endPoint_y(Particle, ParticleChildren)")
-            .Define("MC_endPoint_z",    "MCParticle::get_endPoint_z(Particle, ParticleChildren)")
+            .Define("MC_endPoint_x",    "MCParticle::get_endPoint_x(Particle, ParticleChildren)") #warning: if a neutral B has oscillated into a Bbar, this returns the production vertex of the Bbar
+            .Define("MC_endPoint_y",    "MCParticle::get_endPoint_y(Particle, ParticleChildren)")  #warning: if a neutral B has oscillated into a Bbar, this returns the production vertex of the Bbar
+            .Define("MC_endPoint_z",    "MCParticle::get_endPoint_z(Particle, ParticleChildren)")   #warning: if a neutral B has oscillated into a Bbar, this returns the production vertex of the Bbar
 
 
             ##################################################
@@ -133,88 +135,7 @@ class RDFanalysis():
             .Define("MC_Z",           "MCParticle::sel_genStatus(22)(Particle)")   # INTERMEDIATE
             .Define("MC_qq",          "MCParticle::sel_genStatus(23)(Particle)")   # INTERMEDIATE
             .Define("MC_FS",          "MCParticle::sel_genStatus(1)(Particle)") # INTERMEDIATE
-            
-            # --------------------------------------- #
-            #           MC e+ e- variables            #
-            # --------------------------------------- #
-            .Define("MCem_e",         "(MCParticle::get_e(MC_ee)).at(0)")
-            .Define("MCem_m",         "(MCParticle::get_mass(MC_ee)).at(0)")
-            .Define("MCem_q",         "(MCParticle::get_charge(MC_ee)).at(0)")
-            .Define("MCem_p",         "(MCParticle::get_p(MC_ee)).at(0)")
-            .Define("MCem_pt",        "(MCParticle::get_pt(MC_ee)).at(0)")
-            .Define("MCem_px",        "(MCParticle::get_px(MC_ee)).at(0)")
-            .Define("MCem_py",        "(MCParticle::get_py(MC_ee)).at(0)")
-            .Define("MCem_pz",        "(MCParticle::get_pz(MC_ee)).at(0)")
-            .Define("MCem_eta",       "(MCParticle::get_eta(MC_ee)).at(0)")
-            .Define("MCem_phi",       "(MCParticle::get_phi(MC_ee)).at(0)")
-            .Define("MCem_orivtx_x",  "(MCParticle::get_vertex_x(MC_ee)).at(0)")
-            .Define("MCem_orivtx_y",  "(MCParticle::get_vertex_y(MC_ee)).at(0)")
-            .Define("MCem_orivtx_z",  "(MCParticle::get_vertex_z(MC_ee)).at(0)")
-            .Define("MCep_e",         "(MCParticle::get_e(MC_ee)).at(1)")
-            .Define("MCep_m",         "(MCParticle::get_mass(MC_ee)).at(1)")
-            .Define("MCep_q",         "(MCParticle::get_charge(MC_ee)).at(1)")
-            .Define("MCep_p",         "(MCParticle::get_p(MC_ee)).at(1)")
-            .Define("MCep_pt",        "(MCParticle::get_pt(MC_ee)).at(1)")
-            .Define("MCep_px",        "(MCParticle::get_px(MC_ee)).at(1)")
-            .Define("MCep_py",        "(MCParticle::get_py(MC_ee)).at(1)")
-            .Define("MCep_pz",        "(MCParticle::get_pz(MC_ee)).at(1)")
-            .Define("MCep_eta",       "(MCParticle::get_eta(MC_ee)).at(1)")
-            .Define("MCep_phi",       "(MCParticle::get_phi(MC_ee)).at(1)")
-            .Define("MCep_orivtx_x",  "(MCParticle::get_vertex_x(MC_ee)).at(1)")
-            .Define("MCep_orivtx_y",  "(MCParticle::get_vertex_y(MC_ee)).at(1)")
-            .Define("MCep_orivtx_z",  "(MCParticle::get_vertex_z(MC_ee)).at(1)")
-            
-            # --------------------------------------- #
-            #           MC Z boson variables          #
-            # --------------------------------------- #
-            
-            .Define("MCZ_e",          "(MCParticle::get_e(MC_Z)).at(0)")
-            .Define("MCZ_m",          "(MCParticle::get_mass(MC_Z)).at(0)")
-            .Define("MCZ_q",          "(MCParticle::get_charge(MC_Z)).at(0)")
-            .Define("MCZ_p",          "(MCParticle::get_p(MC_Z)).at(0)")
-            .Define("MCZ_pt",         "(MCParticle::get_pt(MC_Z)).at(0)")
-            .Define("MCZ_px",         "(MCParticle::get_px(MC_Z)).at(0)")
-            .Define("MCZ_py",         "(MCParticle::get_py(MC_Z)).at(0)")
-            .Define("MCZ_pz",         "(MCParticle::get_pz(MC_Z)).at(0)")
-            .Define("MCZ_eta",        "(MCParticle::get_eta(MC_Z)).at(0)")
-            .Define("MCZ_phi",        "(MCParticle::get_phi(MC_Z)).at(0)")
-            .Define("MCZ_orivtx_x",   "(MCParticle::get_vertex_x(MC_Z)).at(0)")
-            .Define("MCZ_orivtx_y",   "(MCParticle::get_vertex_y(MC_Z)).at(0)")
-            .Define("MCZ_orivtx_z",   "(MCParticle::get_vertex_z(MC_Z)).at(0)")
-
-
-            # --------------------------------------- #
-            #            MC qqbar variables           #
-            # --------------------------------------- #
-            .Define("MCq1_PDG",       "(MCParticle::get_pdg(MC_qq)).at(0)")
-            .Define("MCq1_e",         "(MCParticle::get_e(MC_qq)).at(0)")
-            .Define("MCq1_m",         "(MCParticle::get_mass(MC_qq)).at(0)")
-            .Define("MCq1_q",         "(MCParticle::get_charge(MC_qq)).at(0)")
-            .Define("MCq1_p",         "(MCParticle::get_p(MC_qq)).at(0)")
-            .Define("MCq1_pt",        "(MCParticle::get_pt(MC_qq)).at(0)")
-            .Define("MCq1_px",        "(MCParticle::get_px(MC_qq)).at(0)")
-            .Define("MCq1_py",        "(MCParticle::get_py(MC_qq)).at(0)")
-            .Define("MCq1_pz",        "(MCParticle::get_pz(MC_qq)).at(0)")
-            .Define("MCq1_eta",       "(MCParticle::get_eta(MC_qq)).at(0)")
-            .Define("MCq1_phi",       "(MCParticle::get_phi(MC_qq)).at(0)")
-            .Define("MCq1_orivtx_x",  "(MCParticle::get_vertex_x(MC_qq)).at(0)")
-            .Define("MCq1_orivtx_y",  "(MCParticle::get_vertex_y(MC_qq)).at(0)")
-            .Define("MCq1_orivtx_z",  "(MCParticle::get_vertex_z(MC_qq)).at(0)")
-            .Define("MCq2_PDG",       "(MCParticle::get_pdg(MC_qq)).at(1)")
-            .Define("MCq2_e",         "(MCParticle::get_e(MC_qq)).at(1)")
-            .Define("MCq2_m",         "(MCParticle::get_mass(MC_qq)).at(1)")
-            .Define("MCq2_q",         "(MCParticle::get_charge(MC_qq)).at(1)")
-            .Define("MCq2_p",         "(MCParticle::get_p(MC_qq)).at(1)")
-            .Define("MCq2_pt",        "(MCParticle::get_pt(MC_qq)).at(1)")
-            .Define("MCq2_px",        "(MCParticle::get_px(MC_qq)).at(1)")
-            .Define("MCq2_py",        "(MCParticle::get_py(MC_qq)).at(1)")
-            .Define("MCq2_pz",        "(MCParticle::get_pz(MC_qq)).at(1)")
-            .Define("MCq2_eta",       "(MCParticle::get_eta(MC_qq)).at(1)")
-            .Define("MCq2_phi",       "(MCParticle::get_phi(MC_qq)).at(1)")
-            .Define("MCq2_orivtx_x",  "(MCParticle::get_vertex_x(MC_qq)).at(1)")
-            .Define("MCq2_orivtx_y",  "(MCParticle::get_vertex_y(MC_qq)).at(1)")
-            .Define("MCq2_orivtx_z",  "(MCParticle::get_vertex_z(MC_qq)).at(1)")
-
+        
             
             # --------------------------------------- #
             #    MC final-state particle variables    #
@@ -239,8 +160,8 @@ class RDFanalysis():
             ##            MC PrimaryVertex             ##
             #############################################
 
-            .Define("MC_PrimaryVertex",  "MCParticle::get_EventPrimaryVertex(21)(Particle)") 
-            
+            .Define("MC_PrimaryVertex",  "MCParticle::get_EventPrimaryVertex(21)(Particle)")
+
             .Define("MC_PV_x",  "MC_PrimaryVertex.X()") 
             .Define("MC_PV_y",  "MC_PrimaryVertex.Y()") 
             .Define("MC_PV_z",  "MC_PrimaryVertex.Z()")
@@ -264,14 +185,112 @@ class RDFanalysis():
             
 
 
-            #############################################
-            ##         Perform vertex fitting          ##
-            #############################################
+            ###############################################
+            ##      Perform vertex fitting - seeded from MC (initial attempt)         
+            ###############################################
+
+            # get all MC vertices
+            #.Define("MC_VertexObject",          "myUtils::get_MCVertexObject(Particle, ParticleParents)") #defined earlier
+            # use this to seed the Rec vertexing
+            .Define("Rec_VertexObject",        f"myUtils::get_VertexObject(MC_VertexObject, ReconstructedParticles, EFlowTrack_1, MCRecoAssociationsRec, MCRecoAssociationsGen, {bsc[0]}, {bsc[1]}, {bsc[2]})")
+                        
+            ## Define seeded vertex variables 
+            # Filter events with no seeded PV. Otherwise Snapshot would throw a strop
+            .Define("EVT_hasPV",                "myUtils::hasPV(Rec_VertexObject)")
+            .Filter("EVT_hasPV==1")
+
+            # add the PID hypothesis info to the RecParticles (based on MC truth - ie assume perfect PID here)
+            .Define("RecoParticlesPID",          "myUtils::PID(ReconstructedParticles, MCRecoAssociationsRec, MCRecoAssociationsGen, Particle)")
+            # now update reco momentum based on the rec vertex position
+            .Define("RecoParticlesPIDAtVertex",  "myUtils::get_RP_atVertex(RecoParticlesPID, Rec_VertexObject)")
 
 
-            #-------------------------------------
-            #  Not seeded from MC    
-            #-------------------------------------
+            ##############################################
+            # Now also make variables where momentum updated from vtx fit
+            ##############################################
+            
+            #-----------------------------------------------------------------------------------
+            #Rec particle variables with momentum updated from seeded vertex fit
+            #-----------------------------------------------------------------------------------
+
+            .Define("Rec_n",         "ReconstructedParticle::get_n(RecoParticlesPIDAtVertex)")
+            .Define("Rec_type",      "ReconstructedParticle::get_type(RecoParticlesPIDAtVertex)") # this PID from Delphes, ie. straight from particle flow. Therefore for charged particles usually same as MC, but for neutral hadrons, all KL
+            .Define("Rec_m",         "ReconstructedParticle::get_mass(RecoParticlesPIDAtVertex)")
+            .Define("Rec_q",         "ReconstructedParticle::get_charge(RecoParticlesPIDAtVertex)")
+            .Define("Rec_eta",       "ReconstructedParticle::get_eta(RecoParticlesPIDAtVertex)")
+            .Define("Rec_phi",       "ReconstructedParticle::get_phi(RecoParticlesPIDAtVertex)")
+           
+            .Define("Rec_indvtx",    "myUtils::get_Vertex_fromRP(RecoParticlesPIDAtVertex, Rec_VertexObject)")
+            .Define("Rec_e",         "ReconstructedParticle::get_e(RecoParticlesPIDAtVertex)")
+            .Define("Rec_p",         "ReconstructedParticle::get_p(RecoParticlesPIDAtVertex)")
+            .Define("Rec_pt",        "ReconstructedParticle::get_pt(RecoParticlesPIDAtVertex)")
+            .Define("Rec_px",        "ReconstructedParticle::get_px(RecoParticlesPIDAtVertex)")
+            .Define("Rec_py",        "ReconstructedParticle::get_py(RecoParticlesPIDAtVertex)")
+            .Define("Rec_pz",        "ReconstructedParticle::get_pz(RecoParticlesPIDAtVertex)")
+           
+
+            #--------------------------------------------------------
+            # All Rec Vertices (seeded)
+            #--------------------------------------------------------
+
+            .Define("Rec_vtx_n",               "float(Rec_VertexObject.size())")
+            .Define("Rec_vtx_indRP",           "myUtils::get_Vertex_ind(Rec_VertexObject)")
+            .Define("Rec_vtx_chi2",            "myUtils::get_Vertex_chi2(Rec_VertexObject)")
+            .Define("Rec_vtx_isPV",            "myUtils::get_Vertex_isPV(Rec_VertexObject)")
+            .Define("Rec_vtx_ntracks",         "myUtils::get_Vertex_ntracks(Rec_VertexObject)")
+            .Define("Rec_vtx_m",               "myUtils::get_Vertex_mass(Rec_VertexObject, RecoParticlesPIDAtVertex)")
+            .Define("Rec_vtx_x",               "myUtils::get_Vertex_x(Rec_VertexObject)")
+            .Define("Rec_vtx_y",               "myUtils::get_Vertex_y(Rec_VertexObject)")
+            .Define("Rec_vtx_z",               "myUtils::get_Vertex_z(Rec_VertexObject)")
+            .Define("Rec_vtx_xerr",            "myUtils::get_Vertex_xErr(Rec_VertexObject)")
+            .Define("Rec_vtx_yerr",            "myUtils::get_Vertex_yErr(Rec_VertexObject)")
+            .Define("Rec_vtx_zerr",            "myUtils::get_Vertex_zErr(Rec_VertexObject)")
+
+            .Define("Rec_vtx_d2PV",            "myUtils::get_Vertex_d2PV(Rec_VertexObject,-1)")   # INTERMEDIATE
+            .Define("Rec_vtx_d2PV_x",          "myUtils::get_Vertex_d2PV(Rec_VertexObject, 0)")
+            .Define("Rec_vtx_d2PV_y",          "myUtils::get_Vertex_d2PV(Rec_VertexObject, 1)")
+            .Define("Rec_vtx_d2PV_z",          "myUtils::get_Vertex_d2PV(Rec_VertexObject, 2)")
+            .Define("Rec_vtx_d2PV_mag",        "sqrt(Rec_vtx_d2PV_x*Rec_vtx_d2PV_x+Rec_vtx_d2PV_y*Rec_vtx_d2PV_y+Rec_vtx_d2PV_z*Rec_vtx_d2PV_z)") 
+            .Define("Rec_vtx_d2PV_err",        "myUtils::get_Vertex_d2PVError(Rec_VertexObject,-1)")
+            .Define("Rec_vtx_d2PV_xerr",       "myUtils::get_Vertex_d2PVError(Rec_VertexObject, 0)")
+            .Define("Rec_vtx_d2PV_yerr",       "myUtils::get_Vertex_d2PVError(Rec_VertexObject, 1)")
+            .Define("Rec_vtx_d2PV_zerr",       "myUtils::get_Vertex_d2PVError(Rec_VertexObject, 2)")
+            .Define("Rec_vtx_normd2PV",        "Rec_vtx_d2PV / Rec_vtx_d2PV_err")   # INTERMEDIATE
+            .Define("Rec_vtx_normd2PV_x",      "Rec_vtx_d2PV_x / Rec_vtx_d2PV_xerr")
+            .Define("Rec_vtx_normd2PV_y",      "Rec_vtx_d2PV_y / Rec_vtx_d2PV_yerr")
+            .Define("Rec_vtx_normd2PV_z",      "Rec_vtx_d2PV_z / Rec_vtx_d2PV_zerr")
+
+
+            #--------------------------------------------------------
+            # EVT variables from seeded vertices
+            #--------------------------------------------------------
+
+            ## Construct the Thrust Axis       
+            .Define("EVT_ThrustInfoNoPointing",     'Algorithms::minimize_thrust("Minuit2","Migrad")(Rec_px, Rec_py, Rec_pz)') 
+            .Define("EVT_ThrustCosThetaNoPointing", "Algorithms::getAxisCosTheta(EVT_ThrustInfoNoPointing, Rec_px, Rec_py, Rec_pz)")
+            .Define("EVT_ThrustInfo",               "Algorithms::getThrustPointing(1.)(EVT_ThrustCosThetaNoPointing, Rec_e, EVT_ThrustInfoNoPointing)")
+            .Define("Rec_thrustCosTheta",           "Algorithms::getAxisCosTheta(EVT_ThrustInfo, Rec_px, Rec_py, Rec_pz)")
+            .Define("Rec_in_hemisEmin",             "myUtils::get_RP_inHemis(1)(Rec_thrustCosTheta)")
+            .Define("Rec_in_hemisEmax",             "myUtils::get_RP_inHemis(0)(Rec_thrustCosTheta)")
+
+            .Define("EVT_Thrust_mag",          "EVT_ThrustInfo.at(0)")
+            .Define("EVT_unitThrust_x",            "myUtils::norm_RVec_x(EVT_ThrustInfo.at(1),EVT_ThrustInfo.at(3),EVT_ThrustInfo.at(5))")
+            .Define("EVT_unitThrust_y",            "myUtils::norm_RVec_x(EVT_ThrustInfo.at(3),EVT_ThrustInfo.at(1),EVT_ThrustInfo.at(5))")
+            .Define("EVT_unitThrust_z",            "myUtils::norm_RVec_x(EVT_ThrustInfo.at(5),EVT_ThrustInfo.at(3),EVT_ThrustInfo.at(1))")
+
+            #Sum all particle momenta 
+            .Define("EVT_sum_Rec_px",  "ROOT::VecOps::Sum(Rec_px)")
+            .Define("EVT_sum_Rec_py",  "ROOT::VecOps::Sum(Rec_py)")
+            .Define("EVT_sum_Rec_pz",  "ROOT::VecOps::Sum(Rec_pz)")
+
+            .Define("EVT_p", "sqrt(EVT_sum_Rec_px*EVT_sum_Rec_px+EVT_sum_Rec_py*EVT_sum_Rec_py+EVT_sum_Rec_pz*EVT_sum_Rec_pz)") 
+            .Define("EVT_e", "ROOT::VecOps::Sum(Rec_e)") 
+
+
+
+            ###############################################
+            ##    Perform vertex fitting - NOT SEEDED from MC        
+            ###############################################
 
             # Get collection of tracks consistent with a PV (i.e. not downstream Ks, Lb etc. tracks)
             # using the get_PrimaryTracks() method with a beam spot constraint under the following parameters
@@ -299,23 +318,45 @@ class RDFanalysis():
             .Define("Rec_V0VertexObject",  "Rec_V0VertexV0Object.vtx") #FCCAnalysesVertex type
 
 
-            #-------------------------------------------------------------------------
-            #  Also fit all vertices seeded from MC (for comparison)
-            #--------------------------------------------------------------------------
+            #---------------------------------
+            #Additional PV fits without BSC for comparion
+            #------------------------------------
+            # First the PV - select tracks reconstructed as primaries
+            #.Define("Rec_PrimaryTracks_noBSC",       f"VertexFitterSimple::get_PrimaryTracks( EFlowTrack_1, false)")
+            #.Define("Rec_n_primary_tracks_noBSC",     "ReconstructedParticle2Track::getTK_n( Rec_PrimaryTracks_noBSC )")
+            # Then fit the PV using these tracks
+            #.Define("Rec_PrimaryVertexObject_noBSC", f"VertexFitterSimple::VertexFitter_Tk( 1, Rec_PrimaryTracks_noBSC, false)")
+            #.Define("Rec_PrimaryVertex_noBSC",        "Rec_PrimaryVertexObject_noBSC.vertex")
 
-            # get all MC vertices
-            #.Define("MC_VertexObject",          "myUtils::get_MCVertexObject(Particle, ParticleParents)") #defined earlier
-            # use this to seed the Rec vertexing
-            .Define("Rec_VertexObject",        f"myUtils::get_VertexObject(MC_VertexObject, ReconstructedParticles, EFlowTrack_1, MCRecoAssociationsRec, MCRecoAssociationsGen, {bsc[0]}, {bsc[1]}, {bsc[2]})")
-
-            # add the PID hypothesis info to the RecParticles (based on MC truth - ie assume perfect PID here)
-            .Define("RecoParticlesPID",          "myUtils::PID(ReconstructedParticles, MCRecoAssociationsRec, MCRecoAssociationsGen, Particle)")
-            # now update reco momentum based on the rec vertex position
-            .Define("RecoParticlesPIDAtVertex",  "myUtils::get_RP_atVertex(RecoParticlesPID, Rec_VertexObject)")
+            #.Define("Rec_PV_noBSC_ntracks",  "float(Rec_PrimaryTracks_noBSC.size())")
+            #.Define("Rec_PV_noBSC_x",        "Rec_PrimaryVertex_noBSC.position.x")
+            #.Define("Rec_PV_noBSC_y",        "Rec_PrimaryVertex_noBSC.position.y")
+            #.Define("Rec_PV_noBSC_z",        "Rec_PrimaryVertex_noBSC.position.z")
 
 
+            # BSC fit with tracks found without BSC
+            #.Define("Rec_PrimaryVertexObject_noBSCtrkfind", f"VertexFitterSimple::VertexFitter_Tk( 1, Rec_PrimaryTracks_noBSC, true, {bsc[0]}, {bsc[1]}, {bsc[2]} )")
+            #.Define("Rec_PrimaryVertex_noBSCtrkfind",        "Rec_PrimaryVertexObject_noBSCtrkfind.vertex")
+
+            #.Define("Rec_PV_noBSCtrkfind_ntracks",  "float(Rec_PrimaryTracks_noBSC.size())")
+            #.Define("Rec_PV_noBSCtrkfind_x",        "Rec_PrimaryVertex_noBSCtrkfind.position.x")
+            #.Define("Rec_PV_noBSCtrkfind_y",        "Rec_PrimaryVertex_noBSCtrkfind.position.y")
+            #.Define("Rec_PV_noBSCtrkfind_z",        "Rec_PrimaryVertex_noBSCtrkfind.position.z")
+
+            #fit tracks found with BSC without BSC
+            #.Define("Rec_PrimaryVertexObject_noBSCfit", f"VertexFitterSimple::VertexFitter_Tk( 1, Rec_PrimaryTracks, false)")
+            #.Define("Rec_PrimaryVertex_noBSCfit",        "Rec_PrimaryVertexObject_noBSCfit.vertex")
+
+            #.Define("Rec_PV_noBSCfit_ntracks",  "float(Rec_PrimaryTracks.size())")
+            #.Define("Rec_PV_noBSCfit_x",        "Rec_PrimaryVertex_noBSCfit.position.x")
+            #.Define("Rec_PV_noBSCfit_y",        "Rec_PrimaryVertex_noBSCfit.position.y")
+            #.Define("Rec_PV_noBSCfit_z",        "Rec_PrimaryVertex_noBSCfit.position.z")
+           
+           
+           
+           
             #############################################
-            ##       Define non-seeded vertex variables  
+            ##       Define non-seeded vertex fit variables  
             #############################################
 
             # PV (non-seeded)
@@ -323,6 +364,9 @@ class RDFanalysis():
             .Define("Rec_PV_x",        "Rec_PrimaryVertex.position.x")
             .Define("Rec_PV_y",        "Rec_PrimaryVertex.position.y")
             .Define("Rec_PV_z",        "Rec_PrimaryVertex.position.z")
+            .Define("Rec_PV_xerr",        "sqrt(Rec_PrimaryVertex.covMatrix[0])")
+            .Define("Rec_PV_yerr",         "sqrt(Rec_PrimaryVertex.covMatrix[2])")
+            .Define("Rec_PV_zerr",         "sqrt(Rec_PrimaryVertex.covMatrix[5])")
             .Define("Rec_PV_chi2",     "Rec_PrimaryVertex.chi2") #chi2 of PV fit - used to check for if PV actually fitter
 
             ## SV info 
@@ -330,12 +374,15 @@ class RDFanalysis():
             .Define("Rec_SV_ntracks",               "VertexingUtils::get_VertexNtrk(Rec_SecondaryVertexObject)")
             .Define("Rec_SV_chi2",            "VertexingUtils::get_chi2_SV(Rec_SecondaryVertexObject)") # SV chi2 (unnormalised) can also have normalised
             .Define("Rec_SV_nDOF",            "VertexingUtils::get_nDOF_SV(Rec_SecondaryVertexObject)") 
-            .Define("Rec_SV_m",               "VertexingUtils::get_invM(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_m",               "VertexingUtils::get_invM(Rec_SecondaryVertexObject)") # invariant mass of a vertex (assuming all tracks to be pions)
             .Define("Rec_SV_p",               "VertexingUtils::get_pMag_SV(Rec_SecondaryVertexObject)")
             .Define("Rec_SV_position",               "VertexingUtils::get_position_SV(Rec_SecondaryVertexObject)") # now need to turn into x,y,z
             .Define("Rec_SV_x",              "ROOT::VecOps::Map(Rec_SV_position, std::mem_fn(&TVector3::X))")
             .Define("Rec_SV_y",              "ROOT::VecOps::Map(Rec_SV_position, std::mem_fn(&TVector3::Y))")
             .Define("Rec_SV_z",              "ROOT::VecOps::Map(Rec_SV_position, std::mem_fn(&TVector3::Z))")
+            .Define("Rec_SV_xerr",            "myUtils::get_Vertex_xErr(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_yerr",            "myUtils::get_Vertex_yErr(Rec_SecondaryVertexObject)")
+            .Define("Rec_SV_zerr",            "myUtils::get_Vertex_zErr(Rec_SecondaryVertexObject)")
             .Define("Rec_SV_d2PV",            "VertexingUtils::get_d3d_SV(Rec_SecondaryVertexObject, Rec_PrimaryVertexObject)") # magnitude of vector of distances of all reconstructed SV from PV (in mm in 3D)
             .Define("Rec_SV_d2PV_xy",          "VertexingUtils::get_dxy_SV(Rec_SecondaryVertexObject, Rec_PrimaryVertexObject)") #perpendicular projection of vector of distances of all reconstructed SV from PV (in mm in xy plane)
 
@@ -348,6 +395,9 @@ class RDFanalysis():
             .Define("Rec_V0_x",               "ROOT::VecOps::Map(Rec_V0_position, std::mem_fn(&TVector3::X))")
             .Define("Rec_V0_y",               "ROOT::VecOps::Map(Rec_V0_position, std::mem_fn(&TVector3::Y))")
             .Define("Rec_V0_z",               "ROOT::VecOps::Map(Rec_V0_position, std::mem_fn(&TVector3::Z))")
+            .Define("Rec_V0_xerr",            "myUtils::get_Vertex_xErr(Rec_V0VertexObject)")
+            .Define("Rec_V0_yerr",            "myUtils::get_Vertex_yErr(Rec_V0VertexObject)")
+            .Define("Rec_V0_zerr",            "myUtils::get_Vertex_zErr(Rec_V0VertexObject)")
             .Define("Rec_V0_d2PV",            "VertexingUtils::get_d3d_SV(Rec_V0VertexObject, Rec_PrimaryVertexObject)") 
             .Define("Rec_V0_d2PV_xy",          "VertexingUtils::get_dxy_SV(Rec_V0VertexObject, Rec_PrimaryVertexObject)") 
             .Define("Rec_V0_type",                 "VertexingUtils::get_pdg_V0(Rec_V0VertexV0Object)") #vector of V0 ID from reconstruction (ie. KS, lambda0 or photon conversion)
@@ -355,48 +405,127 @@ class RDFanalysis():
 
             .Define("EVT_nVtx",                 "1+EVT_nSV+EVT_nV0")
 
+            #combine for all SV d2PV
+            .Define("Rec_SVV0_d2PV",               "ROOT::VecOps::Concatenate(Rec_SV_d2PV, Rec_V0_d2PV)")
+            .Define("Rec_SVV0_x",               "ROOT::VecOps::Concatenate(Rec_SV_x, Rec_V0_x)")
+            .Define("Rec_SVV0_y",               "ROOT::VecOps::Concatenate(Rec_SV_y, Rec_V0_y)")
+            .Define("Rec_SVV0_z",               "ROOT::VecOps::Concatenate(Rec_SV_z, Rec_V0_z)")
+            .Define("Rec_SVV0_p",               "ROOT::VecOps::Concatenate(Rec_SV_z, Rec_V0_p)")
+            .Define("Rec_PVSV_ntracks",           "ROOT::VecOps::Concatenate(ROOT::VecOps::RVec<float>{Rec_PV_ntracks}, Rec_SV_ntracks)")
 
-            #############################################
-            ##         Define seeded vertex variables         ##
+
+
+            ##############################################
+            # variables now updating momentum from non-seeded fit
             #############################################
 
-            # Filter events with no seeded PV. Otherwise Snapshot would throw a strop
-            .Define("EVT_hasPV",                "myUtils::hasPV(Rec_VertexObject)")
-            .Filter("EVT_hasPV==1")
+            # now update reco momentum based on the rec vertex position
+            .Define("RecoParticlesPIDAtPV",  f"myUtils::get_RP_atVertex(RecoParticlesPID, ROOT::VecOps::RVec<VertexingUtils::FCCAnalysesVertex>{{Rec_PrimaryVertexObject}})")
+            .Define("RecoParticlesPIDAtPVSV",  "myUtils::get_RP_atVertex(RecoParticlesPIDAtPV, Rec_SecondaryVertexObject)")
+            .Define("RecoParticlesPIDAtPVSVV0",  "myUtils::get_RP_atVertex(RecoParticlesPIDAtPVSV, Rec_V0VertexObject)")
+
+            .Define("Rec_e_vfit",         "ReconstructedParticle::get_e(RecoParticlesPIDAtPVSVV0)")
+            .Define("Rec_p_vfit",         "ReconstructedParticle::get_p(RecoParticlesPIDAtPVSVV0)")
+            .Define("Rec_pt_vfit",        "ReconstructedParticle::get_pt(RecoParticlesPIDAtPVSVV0)")
+            .Define("Rec_px_vfit",        "ReconstructedParticle::get_px(RecoParticlesPIDAtPVSVV0)")
+            .Define("Rec_py_vfit",        "ReconstructedParticle::get_py(RecoParticlesPIDAtPVSVV0)")
+            .Define("Rec_pz_vfit",        "ReconstructedParticle::get_pz(RecoParticlesPIDAtPVSVV0)")
+
+            .Define("EVT_ThrustInfoNoPointing_vfit",     'Algorithms::minimize_thrust("Minuit2","Migrad")(Rec_px_vfit, Rec_py_vfit, Rec_pz_vfit)') 
+            .Define("EVT_ThrustCosThetaNoPointing_vfit", "Algorithms::getAxisCosTheta(EVT_ThrustInfoNoPointing_vfit, Rec_px_vfit, Rec_py_vfit, Rec_pz_vfit)")
+            .Define("EVT_ThrustInfo_vfit",               "Algorithms::getThrustPointing(1.)(EVT_ThrustCosThetaNoPointing_vfit, Rec_e_vfit, EVT_ThrustInfoNoPointing_vfit)")
+            .Define("Rec_thrustCosTheta_vfit",           "Algorithms::getAxisCosTheta(EVT_ThrustInfo_vfit, Rec_px_vfit, Rec_py_vfit, Rec_pz_vfit)")
+            .Define("Rec_in_hemisEmin_vfit",             "myUtils::get_RP_inHemis(1)(Rec_thrustCosTheta_vfit)")
+
+            .Define("EVT_unitThrust_x_vfit",            "myUtils::norm_RVec_x(EVT_ThrustInfo_vfit.at(1),EVT_ThrustInfo_vfit.at(3),EVT_ThrustInfo_vfit.at(5))")
+            .Define("EVT_unitThrust_y_vfit",            "myUtils::norm_RVec_x(EVT_ThrustInfo_vfit.at(3),EVT_ThrustInfo_vfit.at(1),EVT_ThrustInfo_vfit.at(5))")
+            .Define("EVT_unitThrust_z_vfit",            "myUtils::norm_RVec_x(EVT_ThrustInfo_vfit.at(5),EVT_ThrustInfo_vfit.at(3),EVT_ThrustInfo_vfit.at(1))")
             
-            # All Rec Vertices (seeded)
-            .Define("Rec_vtx_n",               "float(Rec_VertexObject.size())")
-            .Define("Rec_vtx_indRP",           "myUtils::get_Vertex_ind(Rec_VertexObject)")
-            .Define("Rec_vtx_chi2",            "myUtils::get_Vertex_chi2(Rec_VertexObject)")
-            .Define("Rec_vtx_isPV",            "myUtils::get_Vertex_isPV(Rec_VertexObject)")
-            .Define("Rec_vtx_ntracks",         "myUtils::get_Vertex_ntracks(Rec_VertexObject)")
-            .Define("Rec_vtx_m",               "myUtils::get_Vertex_mass(Rec_VertexObject, RecoParticlesPIDAtVertex)")
-            .Define("Rec_vtx_x",               "myUtils::get_Vertex_x(Rec_VertexObject)")
-            .Define("Rec_vtx_y",               "myUtils::get_Vertex_y(Rec_VertexObject)")
-            .Define("Rec_vtx_z",               "myUtils::get_Vertex_z(Rec_VertexObject)")
-            .Define("Rec_vtx_xerr",            "myUtils::get_Vertex_xErr(Rec_VertexObject)")
-            .Define("Rec_vtx_yerr",            "myUtils::get_Vertex_yErr(Rec_VertexObject)")
-            .Define("Rec_vtx_zerr",            "myUtils::get_Vertex_zErr(Rec_VertexObject)")
+            .Define("EVT_sum_Rec_px_vfit",  "ROOT::VecOps::Sum(Rec_px_vfit)")
+            .Define("EVT_sum_Rec_py_vfit",  "ROOT::VecOps::Sum(Rec_py_vfit)")
+            .Define("EVT_sum_Rec_pz_vfit",  "ROOT::VecOps::Sum(Rec_pz_vfit)")
+            
+            .Define("EVT_p_vfit",        "sqrt(EVT_sum_Rec_px_vfit*EVT_sum_Rec_px_vfit+EVT_sum_Rec_py_vfit*EVT_sum_Rec_py_vfit+EVT_sum_Rec_pz_vfit*EVT_sum_Rec_pz_vfit)")
+            .Define("EVT_e_vfit",        "ROOT::VecOps::Sum(Rec_e_vfit)")
 
 
-            #############################################
-            ##       Define reco particle variables    ##
-            #############################################
-            .Define("Rec_n",         "ReconstructedParticle::get_n(RecoParticlesPIDAtVertex)")
-            .Define("Rec_type",      "ReconstructedParticle::get_type(RecoParticlesPIDAtVertex)") # this PID from Delphes, ie. straight from particle flow. Therefore for charged particles usually same as MC, but for neutral hadrons, all KL
-            .Define("Rec_indvtx",    "myUtils::get_Vertex_fromRP(RecoParticlesPIDAtVertex, Rec_VertexObject)")
-            .Define("Rec_e",         "ReconstructedParticle::get_e(RecoParticlesPIDAtVertex)")
-            .Define("Rec_m",         "ReconstructedParticle::get_mass(RecoParticlesPIDAtVertex)")
-            .Define("Rec_q",         "ReconstructedParticle::get_charge(RecoParticlesPIDAtVertex)")
-            .Define("Rec_p",         "ReconstructedParticle::get_p(RecoParticlesPIDAtVertex)")
-            .Define("Rec_pt",        "ReconstructedParticle::get_pt(RecoParticlesPIDAtVertex)")
-            .Define("Rec_px",        "ReconstructedParticle::get_px(RecoParticlesPIDAtVertex)")
-            .Define("Rec_py",        "ReconstructedParticle::get_py(RecoParticlesPIDAtVertex)")
-            .Define("Rec_pz",        "ReconstructedParticle::get_pz(RecoParticlesPIDAtVertex)")
-            .Define("Rec_eta",       "ReconstructedParticle::get_eta(RecoParticlesPIDAtVertex)")
-            .Define("Rec_phi",       "ReconstructedParticle::get_phi(RecoParticlesPIDAtVertex)")
- 
-            # Do MC association of reco particle to true MC particle
+            ########################################################
+            # Defining additional variables for case where dont update momentum from vertexing
+            ########################################################
+
+            .Define("Rec_e_raw",         "ReconstructedParticle::get_e(RecoParticlesPID)")
+            .Define("Rec_p_raw",         "ReconstructedParticle::get_p(RecoParticlesPID)")
+            .Define("Rec_pt_raw",        "ReconstructedParticle::get_pt(RecoParticlesPID)")
+            .Define("Rec_px_raw",        "ReconstructedParticle::get_px(RecoParticlesPID)")
+            .Define("Rec_py_raw",        "ReconstructedParticle::get_py(RecoParticlesPID)")
+            .Define("Rec_pz_raw",        "ReconstructedParticle::get_pz(RecoParticlesPID)")
+
+            .Define("EVT_ThrustInfoNoPointing_raw",     'Algorithms::minimize_thrust("Minuit2","Migrad")(Rec_px_raw, Rec_py_raw, Rec_pz_raw)') 
+            .Define("EVT_ThrustCosThetaNoPointing_raw", "Algorithms::getAxisCosTheta(EVT_ThrustInfoNoPointing_raw, Rec_px_raw, Rec_py_raw, Rec_pz_raw)")
+            .Define("EVT_ThrustInfo_raw",               "Algorithms::getThrustPointing(1.)(EVT_ThrustCosThetaNoPointing_raw, Rec_e_raw, EVT_ThrustInfoNoPointing_raw)")
+            .Define("Rec_thrustCosTheta_raw",           "Algorithms::getAxisCosTheta(EVT_ThrustInfo_raw, Rec_px_raw, Rec_py_raw, Rec_pz_raw)")
+            .Define("Rec_in_hemisEmin_raw",             "myUtils::get_RP_inHemis(1)(Rec_thrustCosTheta_raw)")
+
+            .Define("EVT_unitThrust_x_raw",            "myUtils::norm_RVec_x(EVT_ThrustInfo_raw.at(1),EVT_ThrustInfo_raw.at(3),EVT_ThrustInfo_raw.at(5))")
+            .Define("EVT_unitThrust_y_raw",            "myUtils::norm_RVec_x(EVT_ThrustInfo_raw.at(3),EVT_ThrustInfo_raw.at(1),EVT_ThrustInfo_raw.at(5))")
+            .Define("EVT_unitThrust_z_raw",            "myUtils::norm_RVec_x(EVT_ThrustInfo_raw.at(5),EVT_ThrustInfo_raw.at(3),EVT_ThrustInfo_raw.at(1))")
+            
+            .Define("EVT_sum_Rec_px_raw",  "ROOT::VecOps::Sum(Rec_px_raw)")
+            .Define("EVT_sum_Rec_py_raw",  "ROOT::VecOps::Sum(Rec_py_raw)")
+            .Define("EVT_sum_Rec_pz_raw",  "ROOT::VecOps::Sum(Rec_pz_raw)")
+            
+            .Define("EVT_p_raw",        "sqrt(EVT_sum_Rec_px_raw*EVT_sum_Rec_px_raw+EVT_sum_Rec_py_raw*EVT_sum_Rec_py_raw+EVT_sum_Rec_pz_raw*EVT_sum_Rec_pz_raw)")
+            .Define("EVT_e_raw",        "ROOT::VecOps::Sum(Rec_e_raw)")
+
+
+
+
+
+            ######################################################
+            # EVT vars that dont care abt vertex fit and momentum update from seeded fit
+            ######################################################
+            .Define("EVT_ID", "rdfentry_") 
+            .Define("EVT_n", "ReconstructedParticles.size()")
+            .Define("EVT_nCharged", "Sum(Rec_q != 0)")
+            .Define("EVT_nNeutral", "Sum(Rec_q == 0)")
+
+
+
+            ###################################################################
+            #Reco variables that use RecoParticlesPIDAtVertex but are not affected by momentum update from seeded fit
+            ####################################################################
+            
+            #------------------------------------------------------------------
+            ##           IP-like track vars           
+            #------------------------------------------------------------------
+            .Define("Rec_track_d0",      "ReconstructedParticle2Track::getRP2TRK_D0(RecoParticlesPIDAtVertex, EFlowTrack_1)")
+            .Define("Rec_track_d0_sig",  "ReconstructedParticle2Track::getRP2TRK_D0_sig(RecoParticlesPIDAtVertex, EFlowTrack_1)")
+            .Define("Rec_track_z0",      "ReconstructedParticle2Track::getRP2TRK_Z0(RecoParticlesPIDAtVertex, EFlowTrack_1)")
+            .Define("Rec_track_z0_sig",  "ReconstructedParticle2Track::getRP2TRK_Z0_sig(RecoParticlesPIDAtVertex, EFlowTrack_1)")
+
+
+            .Define("Rec_track_absd0",      "myUtils::abs_RVec(Rec_track_d0)")
+            .Define("Rec_track_absnormd0",  "myUtils::abs_RVec(Rec_track_d0_sig)")
+            .Define("Rec_track_absz0",      "myUtils::abs_RVec(Rec_track_z0)")
+            .Define("Rec_track_absnormz0",  "myUtils::abs_RVec(Rec_track_z0_sig)")
+
+            # Store total number of tracks
+            .Define("Rec_track_n",       "float(ReconstructedParticle2Track::getTK_n(EFlowTrack_1))")
+
+            #Adding IPs corrected so that from PV rather than 000
+            .Define("Rec_PV_TLorentz",     "TLorentzVector(Rec_PrimaryVertex.position.x, Rec_PrimaryVertex.position.y, Rec_PrimaryVertex.position.z, 0.)") #time component not used so fill with 0.
+            .Define("MC_PV_TLorentz",     "TLorentzVector(MC_PrimaryVertex.X(), MC_PrimaryVertex.Y(), MC_PrimaryVertex.Z(), 0.)")
+            .Define("Rec_track_d0_fromRecPV",     "ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, Rec_PV_TLorentz, magFieldBz.at(0))")
+            .Define("Rec_track_z0_fromRecPV",     "ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  Rec_PV_TLorentz, magFieldBz.at(0))")
+            .Define("Rec_track_d0_fromMCPV",     "ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, MC_PV_TLorentz, magFieldBz.at(0))")
+            .Define("Rec_track_z0_fromMCPV",     "ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  MC_PV_TLorentz, magFieldBz.at(0))")
+
+
+
+            ######################################
+            # Association of reco particle to true MC particle
+            ######################################
+
             .Define("MC_fromRP",           "myUtils::get_MCObject_fromRP(MCRecoAssociationsRec, MCRecoAssociationsGen, RecoParticlesPIDAtVertex, Particle)")
             .Define("Rec_true_PDG",        "MCParticle::get_pdg(MC_fromRP)")  # this true ID from MC
             .Define("Rec_true_e",          "MCParticle::get_e(MC_fromRP)")
@@ -422,196 +551,15 @@ class RDFanalysis():
             .Define("Rec_true_M1ofM2",     "True_ParentInfo.at(4)")
             .Define("Rec_true_M2ofM2",     "True_ParentInfo.at(5)")
             
-            # Store total number of tracks
-            .Define("Rec_track_n",       "float(ReconstructedParticle2Track::getTK_n(EFlowTrack_1))")
-
-            #############################################
-            ##      Construct the Thrust Axis          ##
-            #############################################
-
-            .Define("EVT_ThrustInfoNoPointing",     'Algorithms::minimize_thrust("Minuit2","Migrad")(Rec_px, Rec_py, Rec_pz)') 
-            .Define("EVT_ThrustCosThetaNoPointing", "Algorithms::getAxisCosTheta(EVT_ThrustInfoNoPointing, Rec_px, Rec_py, Rec_pz)")
-            .Define("EVT_ThrustInfo",               "Algorithms::getThrustPointing(1.)(EVT_ThrustCosThetaNoPointing, Rec_e, EVT_ThrustInfoNoPointing)")
-            .Define("Rec_thrustCosTheta",           "Algorithms::getAxisCosTheta(EVT_ThrustInfo, Rec_px, Rec_py, Rec_pz)")
-            .Define("Rec_in_hemisEmin",             "myUtils::get_RP_inHemis(1)(Rec_thrustCosTheta)")
-            .Define("Rec_in_hemisEmax",             "myUtils::get_RP_inHemis(0)(Rec_thrustCosTheta)")
-
-            .Define("EVT_ThrustInfoMax_N",     "Algorithms::getAxisN(0)(Rec_thrustCosTheta, Rec_q)")
-            .Define("EVT_ThrustInfoMin_N",     "Algorithms::getAxisN(1)(Rec_thrustCosTheta, Rec_q)")
-            .Define("EVT_ThrustInfoMax_E",     "Algorithms::getAxisEnergy(0)(Rec_thrustCosTheta, Rec_q, Rec_e)")
-            .Define("EVT_ThrustInfoMin_E",     "Algorithms::getAxisEnergy(1)(Rec_thrustCosTheta, Rec_q, Rec_e)")
-
-            .Define("EVT_hemisEmin_e",         "EVT_ThrustInfoMin_E.at(0)")
-            .Define("EVT_hemisEmin_eCharged",  "EVT_ThrustInfoMin_E.at(1)")
-            .Define("EVT_hemisEmin_eNeutral",  "EVT_ThrustInfoMin_E.at(2)")
-            .Define("EVT_hemisEmin_n",         "float(EVT_ThrustInfoMin_N.at(0))")
-            .Define("EVT_hemisEmin_nCharged",  "float(EVT_ThrustInfoMin_N.at(1))")
-            .Define("EVT_hemisEmin_nNeutral",  "float(EVT_ThrustInfoMin_N.at(2))")
-
-
-            #############################################
-            ##           Remaining Thrust Vars         ##
-            #############################################
-
-            .Define("EVT_Thrust_mag",          "EVT_ThrustInfo.at(0)")
-            .Define("EVT_Thrust_x",            "EVT_ThrustInfo.at(1)")
-            .Define("EVT_Thrust_xerr",         "EVT_ThrustInfo.at(2)")
-            .Define("EVT_Thrust_y",            "EVT_ThrustInfo.at(3)")
-            .Define("EVT_Thrust_yerr",         "EVT_ThrustInfo.at(4)")
-            .Define("EVT_Thrust_z",            "EVT_ThrustInfo.at(5)")
-            .Define("EVT_Thrust_zerr",         "EVT_ThrustInfo.at(6)")
-
-            .Define("EVT_unitThrust_x",            "myUtils::norm_RVec_x(EVT_ThrustInfo.at(1),EVT_ThrustInfo.at(3),EVT_ThrustInfo.at(5))")
-            .Define("EVT_unitThrust_y",            "myUtils::norm_RVec_x(EVT_ThrustInfo.at(3),EVT_ThrustInfo.at(1),EVT_ThrustInfo.at(5))")
-            .Define("EVT_unitThrust_z",            "myUtils::norm_RVec_x(EVT_ThrustInfo.at(5),EVT_ThrustInfo.at(3),EVT_ThrustInfo.at(1))")
-
-            .Define("EVT_hemisEmax_e",         "EVT_ThrustInfoMax_E.at(0)")
-            .Define("EVT_hemisEmax_eCharged",  "EVT_ThrustInfoMax_E.at(1)")
-            .Define("EVT_hemisEmax_eNeutral",  "EVT_ThrustInfoMax_E.at(2)")
-            .Define("EVT_hemisEmax_n",         "float(EVT_ThrustInfoMax_N.at(0))")
-            .Define("EVT_hemisEmax_nCharged",  "float(EVT_ThrustInfoMax_N.at(1))")
-            .Define("EVT_hemisEmax_nNeutral",  "float(EVT_ThrustInfoMax_N.at(2))")
-
-            .Define("EVT_e", "(EVT_hemisEmin_e)+(EVT_hemisEmax_e)")
-            .Define("EVT_nCharged",          "(EVT_hemisEmax_nCharged)+(EVT_hemisEmin_nCharged)")
-            .Define("EVT_nNeutral",          "(EVT_hemisEmax_nNeutral)+(EVT_hemisEmin_nNeutral)")
-
-            # Count secondary vertices in each hemisphere
-            .Define("SecondaryVertexThrustAngle",  "myUtils::get_DVertex_thrusthemis_angle(Rec_VertexObject, RecoParticlesPIDAtVertex, EVT_ThrustInfo)")
-            .Define("EVT_hemisEmin_nDV",           "float(myUtils::get_Npos(SecondaryVertexThrustAngle))")
-            .Define("EVT_hemisEmax_nDV",           "float(myUtils::get_Nneg(SecondaryVertexThrustAngle))")
-
-            # Hemisphere energy differences
-            .Define("EVT_Thrust_deltaE",            "(EVT_hemisEmax_e) - (EVT_hemisEmin_e)")
-            .Define("EVT_hemisEmin_Emiss",          f"{0.5*cfg.mass_Z} - EVT_hemisEmin_e")
-            .Define("EVT_hemisEmax_Emiss",          f"{0.5*cfg.mass_Z} - EVT_hemisEmax_e")
-
-            # Gather info on charged lepons, kaons and pions in each hemisphere
-            .Define("EVT_EminPartInfo",    "myUtils::get_RP_HemisInfo(RecoParticlesPIDAtVertex, Rec_VertexObject, Rec_in_hemisEmin)")
-            .Define("EVT_EmaxPartInfo",    "myUtils::get_RP_HemisInfo(RecoParticlesPIDAtVertex, Rec_VertexObject, Rec_in_hemisEmax)")
-            .Define("EVT_hemisEmin_nLept", "(EVT_EminPartInfo.at(0)).num")
-            
-            ##################
-            ## Ella extra variables ##
-            ##################
-
-            .Define("PV_Rec_vtx_m_vec", "myUtils::filter_vtx_variable_onisPV(Rec_vtx_isPV, Rec_vtx_m)") #intermediate
-            .Define("PV_Rec_vtx_m","PV_Rec_vtx_m_vec.at(0)") 
-            
-
-            #Equivalent for different hemispheres
-            # Vertex relations to thrust
-            .Define("Rec_vtx_thrustCosTheta",  "myUtils::get_Vertex_thrusthemis_angle(Rec_VertexObject, RecoParticlesPIDAtVertex, EVT_ThrustInfo)")
-            # Flag vertex in max or min hemisphere
-            .Define("Rec_vtx_in_hemisEmin",    "myUtils::get_Vertex_thrusthemis(Rec_vtx_thrustCosTheta, 1)")
-            .Define("Rec_vtx_in_hemisEmax",    "myUtils::get_Vertex_thrusthemis(Rec_vtx_thrustCosTheta, 0)")  # FLAG - NOT SAVED
-
-            #Sum over vertices in given hemis that are not PV
-            .Define("EVT_hemisEmin_sum_Rec_vtx_ntracks_exclPV_vec", "myUtils::sum_RVec_with2cond(1-(Rec_vtx_isPV), Rec_vtx_in_hemisEmin, Rec_vtx_ntracks)") #Intermediate
-            .Define("EVT_hemisEmax_sum_Rec_vtx_ntracks_exclPV_vec", "myUtils::sum_RVec_with2cond(1-(Rec_vtx_isPV), Rec_vtx_in_hemisEmax, Rec_vtx_ntracks)") #Intermediate
-            
-            #Overall three sum_Rec_vtx_exclPV vars
-            .Define("EVT_sum_Rec_vtx_ntracks_exclPV", "myUtils::sum_RVec_withcond(1-(Rec_vtx_isPV), Rec_vtx_ntracks)")
-            .Define("EVT_hemisEmin_sum_Rec_vtx_ntracks_exclPV", "EVT_hemisEmin_sum_Rec_vtx_ntracks_exclPV_vec.at(0)") 
-            .Define("EVT_hemisEmax_sum_Rec_vtx_ntracks_exclPV", "EVT_hemisEmax_sum_Rec_vtx_ntracks_exclPV_vec.at(0)") 
-            
-
-            #Sum all particle momenta over given hemisphere
-            .Define("EVT_hemisEmin_sum_Rec_p",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmin,Rec_p)")
-            .Define("EVT_hemisEmax_sum_Rec_p",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmax,Rec_p)")
-
-            .Define("EVT_hemisEmin_sum_Rec_px",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmin,Rec_px)")
-            .Define("EVT_hemisEmin_sum_Rec_py",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmin,Rec_py)")
-            .Define("EVT_hemisEmin_sum_Rec_pz",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmin,Rec_pz)")
-            .Define("EVT_hemisEmin_p",  "sqrt(EVT_hemisEmin_sum_Rec_px*EVT_hemisEmin_sum_Rec_px+EVT_hemisEmin_sum_Rec_py*EVT_hemisEmin_sum_Rec_py+EVT_hemisEmin_sum_Rec_pz*EVT_hemisEmin_sum_Rec_pz)")
-            
-            .Define("EVT_hemisEmax_sum_Rec_px",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmax,Rec_px)")
-            .Define("EVT_hemisEmax_sum_Rec_py",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmax,Rec_py)")
-            .Define("EVT_hemisEmax_sum_Rec_pz",  "myUtils::sum_RVec_withcond(Rec_in_hemisEmax,Rec_pz)")
-            .Define("EVT_hemisEmax_p",  "sqrt(EVT_hemisEmax_sum_Rec_px*EVT_hemisEmax_sum_Rec_px+EVT_hemisEmax_sum_Rec_py*EVT_hemisEmax_sum_Rec_py+EVT_hemisEmax_sum_Rec_pz*EVT_hemisEmax_sum_Rec_pz)")
-            
-            .Define("EVT_sum_Rec_px",  "EVT_hemisEmin_sum_Rec_px+EVT_hemisEmax_sum_Rec_px")
-            .Define("EVT_sum_Rec_py",  "EVT_hemisEmin_sum_Rec_py+EVT_hemisEmax_sum_Rec_py")
-            .Define("EVT_sum_Rec_pz",  "EVT_hemisEmin_sum_Rec_pz+EVT_hemisEmax_sum_Rec_pz")
-
-            .Define("unitEVT_sum_Rec_px",  "myUtils::norm_RVec_x(EVT_sum_Rec_px,EVT_sum_Rec_py,EVT_sum_Rec_pz)")
-            .Define("unitEVT_sum_Rec_py",  "myUtils::norm_RVec_x(EVT_sum_Rec_py,EVT_sum_Rec_px,EVT_sum_Rec_pz)")
-            .Define("unitEVT_sum_Rec_pz",  "myUtils::norm_RVec_x(EVT_sum_Rec_pz,EVT_sum_Rec_py,EVT_sum_Rec_px)")
-
-            .Define("EVT_p",  "sqrt(EVT_sum_Rec_px*EVT_sum_Rec_px+EVT_sum_Rec_py*EVT_sum_Rec_py+EVT_sum_Rec_pz*EVT_sum_Rec_pz)")
-
-            
-
-            #############################################
-            ##           IP-like track vars            ##
-            #############################################
-            .Define("Rec_track_d0",      "ReconstructedParticle2Track::getRP2TRK_D0(RecoParticlesPIDAtVertex, EFlowTrack_1)")
-            .Define("Rec_track_d0_sig",  "ReconstructedParticle2Track::getRP2TRK_D0_sig(RecoParticlesPIDAtVertex, EFlowTrack_1)")
-            .Define("Rec_track_z0",      "ReconstructedParticle2Track::getRP2TRK_Z0(RecoParticlesPIDAtVertex, EFlowTrack_1)")
-            .Define("Rec_track_z0_sig",  "ReconstructedParticle2Track::getRP2TRK_Z0_sig(RecoParticlesPIDAtVertex, EFlowTrack_1)")
-
-
-            .Define("Rec_track_absd0",      "myUtils::abs_RVec(Rec_track_d0)")
-            .Define("Rec_track_absnormd0",  "myUtils::abs_RVec(Rec_track_d0_sig)")
-            .Define("Rec_track_absz0",      "myUtils::abs_RVec(Rec_track_z0)")
-            .Define("Rec_track_absnormz0",  "myUtils::abs_RVec(Rec_track_z0_sig)")
-
-
-        
-            ##################################################################
-            ##     Variables for position-based assignment of vtx to hemis  ##        
-            ##################################################################
-
-            #d2PV variable - want for BDT2 and vtx assignment
-            .Define("Rec_vtx_d2PV_x",          "myUtils::get_Vertex_d2PV(Rec_VertexObject, 0)")
-            .Define("Rec_vtx_d2PV_y",          "myUtils::get_Vertex_d2PV(Rec_VertexObject, 1)")
-            .Define("Rec_vtx_d2PV_z",          "myUtils::get_Vertex_d2PV(Rec_VertexObject, 2)")
-            
-            #calculate costheta for thrust to d2pv vector - returns 0 if vertex is a PV - note minus signs infront of d2pv variabls as d2PV defined in source code as PV-SV [the vector we want is SV-PV]
-            .Define("Rec_vtx_thrustCosTheta_d2PV",           "myUtils::getAxisCosTheta_withcond(EVT_ThrustInfo, (-Rec_vtx_d2PV_x), (-Rec_vtx_d2PV_y), (-Rec_vtx_d2PV_z),1-(Rec_vtx_isPV))")
-
-            # Flag vertex in max or min hemisphere - use get_RP_inHemis as gives '-1' if costheta==0
-            .Define("Rec_vtx_in_hemisEmin_d2PV",             "myUtils::get_RP_inHemis(1)(Rec_vtx_thrustCosTheta_d2PV)")
-            .Define("Rec_vtx_in_hemisEmax_d2PV",             "myUtils::get_RP_inHemis(0)(Rec_vtx_thrustCosTheta_d2PV)")
-        
-
-            #############################################
-            ##        Remaining reco vertex vars       ##
-            #############################################
-
-            .Define("Rec_vtx_d2PV",            "myUtils::get_Vertex_d2PV(Rec_VertexObject,-1)")   # INTERMEDIATE
-            .Define("Rec_vtx_d2PV_err",        "myUtils::get_Vertex_d2PVError(Rec_VertexObject,-1)")
-            .Define("Rec_vtx_d2PV_xerr",       "myUtils::get_Vertex_d2PVError(Rec_VertexObject, 0)")
-            .Define("Rec_vtx_d2PV_yerr",       "myUtils::get_Vertex_d2PVError(Rec_VertexObject, 1)")
-            .Define("Rec_vtx_d2PV_zerr",       "myUtils::get_Vertex_d2PVError(Rec_VertexObject, 2)")
-            .Define("Rec_vtx_normd2PV",        "Rec_vtx_d2PV / Rec_vtx_d2PV_err")   # INTERMEDIATE
-            .Define("Rec_vtx_normd2PV_x",      "Rec_vtx_d2PV_x / Rec_vtx_d2PV_xerr")
-            .Define("Rec_vtx_normd2PV_y",      "Rec_vtx_d2PV_y / Rec_vtx_d2PV_yerr")
-            .Define("Rec_vtx_normd2PV_z",      "Rec_vtx_d2PV_z / Rec_vtx_d2PV_zerr")
-
-            # Reco vertex stats
-            .Define("Rec_vtx_d2PV_signed",             "myUtils::get_VertexFeature_signed(Rec_in_hemisEmin, Rec_vtx_d2PV)")
-            .Define("Rec_vtx_normd2PV_signed",         "myUtils::get_VertexFeature_signed(Rec_in_hemisEmin, Rec_vtx_normd2PV)")
-
-            .Define("EVT_ID", "rdfentry_") 
 
             ####################################################
-            ## Defining additional variables for flavour tagging
+            ## Defining additional variables for flavour tagging (agnostic to momentum update)
             ####################################################
 
-            #Get the indices of all photons (PDG ID == 22)
-            .Define("Rec_photon_indices", "myUtils::sel_PID(22)(RecoParticlesPIDAtVertex)") # intermediate
-            # Count photons
-            .Define("EVT_nPhotons",       "float(Rec_photon_indices.size())")
-            
-            #Repeat for Kl (PDG ID == 130)
-            ## Having issues here as the RecoParticlesPIDAtVertex treats all neutral as Kl whereas when take from MC gives Kl, n as separate
-            #.Define("Rec_Klong_indices", "myUtils::sel_PID(130)(RecoParticlesPIDAtVertex)") # intermediate
-            # Count KL
-            #.Define("EVT_nKlong",       "float(Rec_Klong_indices.size())")
 
-
-            #Define qtag (ie. if B0 or B0b and equiv for Bs)
+            #---------------------------------------------------------------
+            # Define qtag (ie. if B0 or B0b and equiv for Bs)
+            #----------------------------------------------------------------
             #Thrust axis infor for MC particles
             .Define("MC_thrustCosTheta",           "Algorithms::getAxisCosTheta(EVT_ThrustInfo, MC_px, MC_py, MC_pz)")
             .Define("MC_in_hemisEmin",             "myUtils::get_RP_inHemis(1)(MC_thrustCosTheta)") # just gives 1 or 0 based on whether in min hemisphere or not
@@ -620,7 +568,36 @@ class RDFanalysis():
             #use this to define qtag (saved flav as a check)
             .Define("EVT_sigB_MCqTag",  "EVT_sigB_MCprodFlav > 0 ? 1 : (EVT_sigB_MCprodFlav < 0 ? -1 : 0)")
 
-            #Also define dNdx for PID tool
+            #also get true momentum
+            .Define("EVT_sigB_MCp", "myUtils::get_fsB_MC_var(MC_p,MC_PDG, MC_M1)")
+            .Define("EVT_sigB_MCpx", "myUtils::get_fsB_MC_var(MC_px,MC_PDG, MC_M1)")
+            .Define("EVT_sigB_MCpy", "myUtils::get_fsB_MC_var(MC_py,MC_PDG, MC_M1)")
+            .Define("EVT_sigB_MCpz", "myUtils::get_fsB_MC_var(MC_pz,MC_PDG, MC_M1)")
+
+
+            #---------------------------------------
+            # Number of neutrals
+            #---------------------------------------
+
+            #Get the indices of all photons (PDG ID == 22)
+            .Define("Rec_photon_indices", "myUtils::sel_PID(22)(RecoParticlesPIDAtVertex)") # intermediate
+            # Count photons
+            .Define("EVT_nPhotons",       "float(Rec_photon_indices.size())")
+
+            # Get number of KS (various assumption levels)
+            #number of MC KS
+            .Define("MC_KS", "MCParticle::sel_pdgID(310, false)(Particle)") #m_abs redundant for KS where PID == 310 ##INTERMEDIATE STATE 
+            .Define("EVT_nKS_MC", "MC_KS.size()" )
+
+            # Get number of reco KS (still cheating without using combinatorics - ie count if have two pi with same origin vertex and parent as KS). As seen in B2Inv study, some inefficiency to hugh energy KS which decay beyon tracker
+            .Define("MC_recParticle_indx", "myUtils::get_RP_idx_from_MC(MCRecoAssociationsRec, MCRecoAssociationsGen, Particle)")
+            .Define("Rec_true_KS", "myUtils::get_rec_true_KS(Particle, ParticleChildren , MC_recParticle_indx)")
+            .Define("EVT_nKS_recTrue","Rec_true_KS.size()")
+
+            #-----------------------------------------
+            # Reco variables for PID
+            #-----------------------------------------
+            #Define dNdx for PID tool
             # First get the track states  associated with  reconstructed particles
             .Define("Rec_trackStates", "ReconstructedParticle2Track::getRP2TRK(RecoParticlesPIDAtVertex, EFlowTrack_1)")
             # Get the dN/dx for those tracks (maintains the same array indices as d0, z0 etc)
@@ -634,27 +611,16 @@ class RDFanalysis():
             .Define("Rec_track_TOF_paddedNeutrals","ReconstructedParticle2Track::getRP2TRK_TOF(RecoParticlesPIDAtVertex, Rec_trackStates, EFlowTrack_1, EFlowTrack, TrackerHits)")
             .Define("Rec_track_length_paddedNeutrals", "ReconstructedParticle2Track::getRP2TRK_length(RecoParticlesPIDAtVertex, Rec_trackStates, EFlowTrack_1, EFlowTrack_L)")
 
+            #---------------------------------------------
+            #Also adding some calorimetry info
+            #--------------------------------------------
 
-            # Get number of KS (various assumption levels)
-            #number of MC KS
-            .Define("MC_KS", "MCParticle::sel_pdgID(310, false)(Particle)") #m_abs redundant for KS where PID == 310 ##INTERMEDIATE STATE 
-            .Define("MC_nKS", "MC_KS.size()" )
+            #Currently not in use as CalorimeterHits doesn't actually include any energy inormation!!!!!!!
+            #.Define("Calo_hits_x", "CaloNtupleizer::getCaloHit_x(CalorimeterHits)")
+            #.Define("Calo_hits_y", "CaloNtupleizer::getCaloHit_y(CalorimeterHits)")
+            #.Define("Calo_hits_z", "CaloNtupleizer::getCaloHit_z(CalorimeterHits)")
+            #.Define("Calo_hits_e", "CaloNtupleizer::getCaloHit_energy(CalorimeterHits)")
 
-
-            # Get number of reco KS (still cheating without using combinatorics - ie count if have two pi with same origin vertex and parent as KS). As seen in B2Inv study, some inefficiency to hugh energy KS which decay beyon tracker
-            .Define("MC_recParticle_indx", "myUtils::get_RP_idx_from_MC(MCRecoAssociationsRec, MCRecoAssociationsGen, Particle)")
-            .Define("Rec_true_KS","myUtils::get_rec_true_KS(Particle, ParticleChildren , MC_recParticle_indx)")
-            .Define("Rec_true_nKS","Rec_true_KS.size()")
-
-
-            #Adding IPs corrected so that from PV rather than 000
-            
-            .Define("Rec_PV_TLorentz",     "TLorentzVector(Rec_PrimaryVertex.position.x, Rec_PrimaryVertex.position.y, Rec_PrimaryVertex.position.z, 0.)") #time component not used so fill with 0.
-            .Define("MC_PV_TLorentz",     "TLorentzVector(MC_PrimaryVertex.X(), MC_PrimaryVertex.Y(), MC_PrimaryVertex.Z(), 0.)")
-            .Define("Rec_track_d0_fromRecPV",     "ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, Rec_PV_TLorentz, magFieldBz.at(0))")
-            .Define("Rec_track_z0_fromRecPV",     "ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  Rec_PV_TLorentz, magFieldBz.at(0))")
-            .Define("Rec_track_d0_fromMCPV",     "ReconstructedParticle2Track::XPtoPar_dxy(RecoParticlesPIDAtVertex, EFlowTrack_1, MC_PV_TLorentz, magFieldBz.at(0))")
-            .Define("Rec_track_z0_fromMCPV",     "ReconstructedParticle2Track::XPtoPar_dz(RecoParticlesPIDAtVertex, EFlowTrack_1,  MC_PV_TLorentz, magFieldBz.at(0))")
 
         )
 

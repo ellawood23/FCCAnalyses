@@ -10,6 +10,8 @@ import numpy as np
 FCCAnalysesPath = "/usera/ejnw2/PhD/FCC_FT/FCCAnalyses/examples/FCCee/flavour/BflavTag/"
 FCCAnalysesPath = os.path.abspath(FCCAnalysesPath)
 FT_outputDir = "/r02/lhcb/ejnw2/FCC_FT/FCC_FT_outputs_full_July2026/tuples/"
+raid_FT_outDir = "/raid/lhcb/ejnw2/FCC_FT_tuples"
+eos_FT_outDir = "/eos/experiment/fcc/ee/analyses_storage/flavor/B_flavour_tagging/"
 
 
 # RUNNING MODE
@@ -27,12 +29,12 @@ if run_mode not in run_mode_choices:
 # processList to pass to `fccanalysis run`
 processList = {
     # Size of winter2023 samples in /eos/experiment/fcc/ee/generation/DelphesEvents/winter2023/IDEA/:
-    # p8_ee_Zbb_ecm91_EvtGen_Bs2NuNu == 13G (2,000,000 events)
-    # p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu ~= 13G (2,200,000 events)
+    # p8_ee_Zbb_ecm91_EvtGen_Bs2NuNu == 328G (53,884,084 events)
+    # p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu ~= 329G (53,987,077 events)
   
 
-    "BflavTag_full":{"p8_ee_Zbb_ecm91_EvtGen_Bs2NuNu":{"fraction": 1, "chunks": 2},
-                "p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu":{"fraction": 1, "chunks": 2},},
+    "BflavTag_full":{"p8_ee_Zbb_ecm91_EvtGen_Bs2NuNu":{"fraction": 0.000001, "chunks": 1},
+                "p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu":{"fraction": 0.000001, "chunks": 1},},
 
 
 }
@@ -41,7 +43,10 @@ processList = {
 fccana_opts = {
     "prodTag":   "FCCee/winter2023/IDEA",
     "outputDir": {
-        "BflavTag_full": os.path.abspath(FT_outputDir),
+        "BflavTag_full": os.path.join(raid_FT_outDir, "50M_tuples_July2026"),
+    },
+    "outputDirEos": {
+        "BflavTag_full": os.path.join(eos_FT_outDir, "50M_tuples_July2026"),
     },
 
     "testFile": {
