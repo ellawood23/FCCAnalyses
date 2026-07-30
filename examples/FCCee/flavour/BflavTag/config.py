@@ -33,8 +33,8 @@ processList = {
     # p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu ~= 329G (53,987,077 events)
   
 
-    "BflavTag_full":{"p8_ee_Zbb_ecm91_EvtGen_Bs2NuNu":{"fraction": 0.000001, "chunks": 1},
-                "p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu":{"fraction": 0.000001, "chunks": 1},},
+    "BflavTag_full":{"p8_ee_Zbb_ecm91_EvtGen_Bs2NuNu":{"fraction": 1, "chunks": 50},
+                "p8_ee_Zbb_ecm91_EvtGen_Bd2NuNu":{"fraction": 1, "chunks": 50},},
 
 
 }
