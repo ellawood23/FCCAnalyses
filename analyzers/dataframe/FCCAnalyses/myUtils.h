@@ -509,6 +509,12 @@ namespace myUtils{
   int get_B_prod_flav_from_nunu(const ROOT::VecOps::RVec<int>& mc_pdg,
                               const ROOT::VecOps::RVec<int>& mc_m1);
 
+  // get MC info about fs B
+  // Note cannot assume that inv decay is always on the SS
+  float get_fsB_MC_var( const ROOT::VecOps::RVec<float>& var,
+                const ROOT::VecOps::RVec<int>& mc_pdg,
+                const ROOT::VecOps::RVec<int>& mc_m1);
+
   ROOT::VecOps::RVec<int> get_RP_idx_from_MC(
                         ROOT::VecOps::RVec<int> reco_ind,//MCRecoAssociationsRec
                         ROOT::VecOps::RVec<int> mc_ind,//MCRecoAssociationsGen

@@ -2619,6 +2619,80 @@ int get_B_prod_flav_from_nunu(const ROOT::VecOps::RVec<int>& mc_pdg,
   return current_pdg;
 }
 
+
+//Returns invisible B momentum (from MC) on decay
+// Note cannot assume that inv decay is always on the SS
+float get_fsB_MC_var( const ROOT::VecOps::RVec<float>& var,
+                const ROOT::VecOps::RVec<int>& mc_pdg,
+                const ROOT::VecOps::RVec<int>& mc_m1) {
+  
+  std::vector<int> b_ancestors_nu;
+  std::vector<int> b_ancestors_anu;
+
+  // Find all neutrinos and antineutrinos in the event and trace to their B parent
+  for (size_t i = 0; i < mc_pdg.size(); ++i) {
+    int pdg = mc_pdg[i];
+    
+    // Check for neutrinos (12: ve, 14: vmu, 16: vtau)
+    bool is_nu  = (pdg == 12 || pdg == 14 || pdg == 16);
+    bool is_anu = (pdg == -12 || pdg == -14 || pdg == -16);
+
+    if (!is_nu && !is_anu) continue;
+
+    // Trace up the chain using mc_m1 to find a B meson ancestor
+    int curr_idx = mc_m1[i];
+    int b_ancestor_idx = -1;
+
+    while (curr_idx >= 0 && curr_idx < mc_pdg.size()) {
+      int parent_pdg = std::abs(mc_pdg[curr_idx]);
+      
+      // Check if the ancestor is a B0 (511) or Bs0 (531)
+      if (parent_pdg == 511 || parent_pdg == 531) {
+        b_ancestor_idx = curr_idx;
+        break;
+      }
+
+      // If dont find Bs0 or B0 break on reaching quark and reurun indx -1
+      if (parent_pdg == 5) {
+        b_ancestor_idx = -1;
+        break;
+      }
+      
+      
+      curr_idx = mc_m1[curr_idx];
+    }
+
+    // Store the B meson ancestor index based on whether we started from a nu or anu
+    if (b_ancestor_idx != -1) {
+      if (is_nu)  b_ancestors_nu.push_back(b_ancestor_idx);
+      if (is_anu) b_ancestors_anu.push_back(b_ancestor_idx);
+    }
+  }
+
+  // Find a B meson that is the ancestor to BOTH a neutrino and an antineutrino
+  int target_b_idx = -1;
+  for (int b_idx : b_ancestors_nu) {
+    if (std::find(b_ancestors_anu.begin(), b_ancestors_anu.end(), b_idx) != b_ancestors_anu.end()) {
+      target_b_idx = b_idx;
+      break; 
+    }
+  }
+
+  // If no B meson parent with a nu-nub pair was found, return 0
+  if (target_b_idx == -1) {
+    return 0; 
+  }
+  
+  // get variable of that B meson
+
+  int fs_B_index = target_b_idx;
+  float fs_B_var = var[fs_B_index];
+  
+  return fs_B_var;
+}
+
+
+
 // Returns an array of length MC particles with reconstructed index, or -1 if not reconstructed.
 ROOT::VecOps::RVec<int> get_RP_idx_from_MC(
     
