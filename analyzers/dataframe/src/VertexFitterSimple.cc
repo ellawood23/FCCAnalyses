@@ -286,7 +286,7 @@ get_PrimaryTracks(ROOT::VecOps::RVec<edm4hep::TrackState> tracks,
 
   for (Int_t i = 0; i < Ntr; i++) {
     edm4hep::TrackState t = tracks[i];
-    TVectorD par = VertexingUtils::get_trackParam(t);
+    TVectorD par = VertexingUtils::get_trackParam(t); //in m
     trkPar[i] = new TVectorD(par);
     TMatrixDSym Cov = VertexingUtils::get_trackCov(t);
     trkCov[i] = new TMatrixDSym(Cov);
@@ -296,7 +296,7 @@ get_PrimaryTracks(ROOT::VecOps::RVec<edm4hep::TrackState> tracks,
 
   if (BeamSpotConstraint) {
     TVectorD xv_BS(3);
-    xv_BS[0] = bsc_x * 1e-6;
+    xv_BS[0] = bsc_x * 1e-6; //1e-6 as operating in m: get_trackParam default for Units_mm = false
     xv_BS[1] = bsc_y * 1e-6;
     xv_BS[2] = bsc_z * 1e-6;
     TMatrixDSym cov_BS(3);

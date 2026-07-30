@@ -55,9 +55,9 @@ namespace VertexFitterSimple{
 
 /// Return the tracks that are flagged as coming from the primary vertex
    ROOT::VecOps::RVec<edm4hep::TrackState> get_PrimaryTracks(           ROOT::VecOps::RVec<edm4hep::TrackState> tracks,
-                                                                        bool BeamSpotConstraint,
-                                                                        double bsc_sigmax, double bsc_sigmay, double bsc_sigmaz,
-                                                                        double bsc_x, double bsc_y, double bsc_z ) ;
+                                                                        bool BeamSpotConstraint=false,
+                                                                        double bsc_sigmax=0., double bsc_sigmay=0., double bsc_sigmaz=0.,
+                                                                        double bsc_x=0., double bsc_y=0., double bsc_z=0. ) ;
 
 
 /// Return the tracks that are NOT flagged as coming from the primary vertex
